@@ -6,6 +6,15 @@
     "preview": {
       "android": {
         "buildType": "apk"
+      },
+      "ios": {
+        "simulator": true
+      }
+    },
+    "preview-ios": {
+      "distribution": "internal",
+      "ios": {
+        "resourceClass": "m-medium"
       }
     },
     "preview2": {

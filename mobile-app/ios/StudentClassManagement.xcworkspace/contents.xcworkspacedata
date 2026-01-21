@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Workspace
+   version = "1.0">
+   <FileRef
+      location = "group:StudentClassManagement.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:Pods/Pods.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:fix-build.sh">
+   </FileRef>
+   <FileRef
+      location = "group:BUILD_FIX_README.md">
+   </FileRef>
+   <FileRef
+      location = "group:quick-start.sh">
+   </FileRef>
+   <FileRef
+      location = "group:BUILD_FIX_SUMMARY.md">
+   </FileRef>
+   <FileRef
+      location = "group:fix-all-pod-scripts.sh">
+   </FileRef>
+   <FileRef
+      location = "group:QUICK_FIX_CHECKLIST.md">
+   </FileRef>
+   <FileRef
+      location = "group:check-build-ready.sh">
+   </FileRef>
+   <FileRef
+      location = "group:BUILD_FIXED.md">
+   </FileRef>
+   <FileRef
+      location = "group:show-fix-summary.sh">
+   </FileRef>
+   <FileRef
+      location = "group:apply-all-fixes.sh">
+   </FileRef>
+   <FileRef
+      location = "group:START_HERE.sh">
+   </FileRef>
+   <FileRef
+      location = "group:FIXES_APPLIED.md">
+   </FileRef>
+   <FileRef
+      location = "group:COMPLETE_FIX_SUMMARY.md">
+   </FileRef>
+   <FileRef
+      location = "group:README_START_HERE.md">
+   </FileRef>
+   <FileRef
+      location = "group:show-fix-status.sh">
+   </FileRef>
+   <FileRef
+      location = "group:QUICK_START_NOW.md">
+   </FileRef>
+   <FileRef
+      location = "group:run-all-fixes-now.sh">
+   </FileRef>
+   <FileRef
+      location = "group:WHAT_I_DID.md">
+   </FileRef>
+</Workspace>
