@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Class Management System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <div class="container mx-auto px-4 py-8 max-w-6xl">
+        <!-- Header -->
+        <div class="bg-white rounded-lg shadow-sm p-6 mb-8">
+            <div class="flex justify-between items-center">
+                <h1 class="text-3xl font-bold text-gray-800">Student Class Management System</h1>
+                <div class="flex items-center space-x-4">
+                    <div id="saveStatus" class="text-sm font-medium"></div>
+                    <div class="flex items-center space-x-2">
+                        <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+                        <span class="text-sm text-gray-600">Database Active</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Price Settings -->
+        <div class="bg-white rounded-lg shadow-sm p-6 mb-8">
+            <h2 class="text-2xl font-semibold mb-6 text-gray-800">Price Settings</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="space-y-3">
+                    <label class="block text-sm font-medium text-gray-700">Kareem - Price per Class</label>
+                    <div class="flex items-center">
+                        <span class="text-gray-500 mr-2">$</span>
+                        <input type="number" id="kareemPrice" class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Enter price" min="0" step="0.01">
+                    </div>
+                </div>
+                <div class="space-y-3">
+                    <label class="block text-sm font-medium text-gray-700">Sara_Hana - Price per Class</label>
+                    <div class="flex items-center">
+                        <span class="text-gray-500 mr-2">$</span>
+                        <input type="number" id="saraHanaPrice" class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Enter price" min="0" step="0.01">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Monthly Overview -->
+        <div class="bg-white rounded-lg shadow-sm p-6 mb-8">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-semibold text-gray-800">Monthly Overview</h2>
+                <div class="flex items-center space-x-4">
+                    <label class="text-sm font-medium text-gray-700">Select Month:</label>
+                    <input type="month" id="monthSelector" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                </div>
+            </div>
+            
+            <div id="currentMonth" class="text-3xl font-bold text-blue-600 mb-6 text-center"></div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div class="bg-blue-50 rounded-lg p-6">
+                    <h3 class="text-xl font-semibold text-blue-800 mb-4">Kareem</h3>
+                    <div class="space-y-2">
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Classes this month:</span>
+                            <span id="kareemMonthlyClasses" class="font-semibold">0</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Monthly total:</span>
+                            <span id="kareemMonthlyTotal" class="font-semibold text-green-600">$0.00</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-pink-50 rounded-lg p-6">
+                    <h3 class="text-xl font-semibold text-pink-800 mb-4">Sara_Hana</h3>
+                    <div class="space-y-2">
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Classes this month:</span>
+                            <span id="saraHanaMonthlyClasses" class="font-semibold">0</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Monthly total:</span>
+                            <span id="saraHanaMonthlyTotal" class="font-semibold text-green-600">$0.00</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-gray-50 rounded-lg p-4">
+                <div class="flex justify-between items-center">
+                    <span class="text-lg font-semibold text-gray-800">Total Classes:</span>
+                    <span id="totalMonthlyClasses" class="text-2xl font-bold text-blue-600">0</span>
+                </div>
+                <div class="flex justify-between items-center mt-2">
+                    <span class="text-lg font-semibold text-gray-800">Total Revenue:</span>
+                    <span id="totalMonthlyRevenue" class="text-2xl font-bold text-green-600">$0.00</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Monthly Schedules -->
+        <div class="bg-white rounded-lg shadow-sm p-6 mb-8">
+            <h2 class="text-2xl font-semibold mb-6 text-gray-800">Monthly Schedules</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Kareem Schedule -->
+                <div class="space-y-4">
+                    <h3 class="text-xl font-semibold text-blue-600">Kareem's Schedule</h3>
+                    
+                    <!-- Add Schedule Form -->
+                    <div class="bg-blue-50 p-4 rounded-lg">
+                        <h4 class="font-medium text-blue-800 mb-3">Add Schedule</h4>
+                        <div class="space-y-3">
+                            <select id="kareemScheduleDay" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                                <option value="">Select Day</option>
+                                <option value="monday">Monday</option>
+                                <option value="tuesday">Tuesday</option>
+                                <option value="wednesday">Wednesday</option>
+                                <option value="thursday">Thursday</option>
+                                <option value="friday">Friday</option>
+                                <option value="saturday">Saturday</option>
+                                <option value="sunday">Sunday</option>
+                            </select>
+                            <input type="time" id="kareemScheduleTime" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" value="09:00">
+                            <button onclick="addSchedule('kareem')" class="w-full bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition duration-200">Add Schedule</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Schedule List -->
+                    <div id="kareemScheduleList" class="space-y-2"></div>
+                    
+                    <!-- Generate Classes -->
+                    <button onclick="generateMonthlyClasses('kareem')" class="w-full bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition duration-200">
+                        Generate Classes
+                    </button>
+                </div>
+
+                <!-- Sara_Hana Schedule -->
+                <div class="space-y-4">
+                    <h3 class="text-xl font-semibold text-pink-600">Sara_Hana's Schedule</h3>
+                    
+                    <!-- Add Schedule Form -->
+                    <div class="bg-pink-50 p-4 rounded-lg">
+                        <h4 class="font-medium text-pink-800 mb-3">Add Schedule</h4>
+                        <div class="space-y-3">
+                            <select id="saraHanaScheduleDay" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500">
+                                <option value="">Select Day</option>
+                                <option value="monday">Monday</option>
+                                <option value="tuesday">Tuesday</option>
+                                <option value="wednesday">Wednesday</option>
+                                <option value="thursday">Thursday</option>
+                                <option value="friday">Friday</option>
+                                <option value="saturday">Saturday</option>
+                                <option value="sunday">Sunday</option>
+                            </select>
+                            <input type="time" id="saraHanaScheduleTime" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500" value="09:00">
+                            <button onclick="addSchedule('saraHana')" class="w-full bg-pink-600 text-white px-4 py-2 rounded-lg hover:bg-pink-700 transition duration-200">Add Schedule</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Schedule List -->
+                    <div id="saraHanaScheduleList" class="space-y-2"></div>
+                    
+                    <!-- Generate Classes -->
+                    <button onclick="generateMonthlyClasses('saraHana')" class="w-full bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition duration-200">
+                        Generate Classes
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add Extra Classes -->
+        <div class="bg-white rounded-lg shadow-sm p-6 mb-8">
+            <h2 class="text-2xl font-semibold mb-6 text-gray-800">Add Extra Classes</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Kareem -->
+                <div class="space-y-4">
+                    <h3 class="text-xl font-semibold text-blue-600">Kareem</h3>
+                    <div class="space-y-3">
+                        <input type="date" id="kareemDate" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                        <input type="time" id="kareemTime" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" value="09:00">
+                        <button onclick="addClass('kareem')" class="w-full bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition duration-200">Add Class</button>
+                    </div>
+                </div>
+
+                <!-- Sara_Hana -->
+                <div class="space-y-4">
+                    <h3 class="text-xl font-semibold text-pink-600">Sara_Hana</h3>
+                    <div class="space-y-3">
+                        <input type="date" id="saraHanaDate" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500">
+                        <input type="time" id="saraHanaTime" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500" value="09:00">
+                        <button onclick="addClass('saraHana')" class="w-full bg-pink-600 text-white px-4 py-2 rounded-lg hover:bg-pink-700 transition duration-200">Add Class</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Class Details -->
+        <div class="bg-white rounded-lg shadow-sm p-6 mb-8">
+            <h2 class="text-2xl font-semibold mb-6 text-gray-800">Class Details</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Kareem's Classes -->
+                <div>
+                    <h3 class="text-xl font-semibold text-blue-600 mb-4">Kareem's Classes</h3>
+                    <div id="kareemClasses" class="space-y-2 max-h-96 overflow-y-auto"></div>
+                </div>
+
+                <!-- Sara_Hana's Classes -->
+                <div>
+                    <h3 class="text-xl font-semibold text-pink-600 mb-4">Sara_Hana's Classes</h3>
+                    <div id="saraHanaClasses" class="space-y-2 max-h-96 overflow-y-auto"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Monthly Reports -->
+        <div class="bg-white rounded-lg shadow-sm p-6">
+            <h2 class="text-2xl font-semibold mb-6 text-gray-800">Monthly Reports</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Kareem Report -->
+                <div class="border rounded-lg p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-xl font-semibold text-blue-600">Kareem's Report</h3>
+                        <button onclick="downloadReport('kareem')" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition duration-200 text-sm">Download Report</button>
+                    </div>
+                    <div id="kareemReport" class="text-sm"></div>
+                </div>
+
+                <!-- Sara_Hana Report -->
+                <div class="border rounded-lg p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-xl font-semibold text-pink-600">Sara_Hana's Report</h3>
+                        <button onclick="downloadReport('saraHana')" class="bg-pink-600 text-white px-4 py-2 rounded-lg hover:bg-pink-700 transition duration-200 text-sm">Download Report</button>
+                    </div>
+                    <div id="saraHanaReport" class="text-sm"></div>
+                </div>
+            </div>
+
+            <!-- Combined Report -->
+            <div class="mt-8 border rounded-lg p-6 bg-gray-50">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-semibold text-gray-800">Combined Monthly Report</h3>
+                    <button onclick="downloadReport('combined')" class="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition duration-200 text-sm">Download Combined Report</button>
+                </div>
+                <div id="combinedReport" class="text-sm"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
