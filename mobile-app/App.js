@@ -1106,15 +1106,52 @@ const StudentClassManagementApp = () => {
         </Modal>
       </Portal>
 
-      {/* Date/Time Pickers */}
-      {monthPickerVisible && (
-        <DateTimePicker
-          value={monthPickerDate}
-          mode="date"
-          display="default"
-          onChange={onMonthChange}
-        />
-      )}
+      {/* Month Picker Modal */}
+      <Portal>
+        <Modal
+          visible={monthPickerVisible}
+          onDismiss={() => setMonthPickerVisible(false)}
+          contentContainerStyle={styles.datePickerModal}
+        >
+          <Text variant="titleLarge" style={styles.datePickerTitle}>Select Month</Text>
+          <DateTimePicker
+            value={monthPickerDate}
+            mode="date"
+            display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+            onChange={(event, date) => {
+              if (Platform.OS === 'android') {
+                setMonthPickerVisible(false);
+              }
+              if (date) {
+                setMonthPickerDate(date);
+              }
+            }}
+            style={styles.datePickerInline}
+          />
+          {Platform.OS === 'ios' && (
+            <View style={styles.datePickerButtons}>
+              <Button
+                mode="outlined"
+                onPress={() => setMonthPickerVisible(false)}
+                style={styles.datePickerButton}
+              >
+                Cancel
+              </Button>
+              <Button
+                mode="contained"
+                onPress={() => {
+                  const monthString = `${monthPickerDate.getFullYear()}-${String(monthPickerDate.getMonth() + 1).padStart(2, '0')}`;
+                  setCurrentMonth(monthString);
+                  setMonthPickerVisible(false);
+                }}
+                style={styles.datePickerButton}
+              >
+                Confirm
+              </Button>
+            </View>
+          )}
+        </Modal>
+      </Portal>
 
       {/* Class Details FAB */}
       <FAB
@@ -1305,6 +1342,30 @@ const styles = StyleSheet.create({
     color: '#6B7280',
     fontStyle: 'italic',
     padding: 20,
+  },
+  datePickerModal: {
+    backgroundColor: 'white',
+    padding: 20,
+    margin: 20,
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  datePickerTitle: {
+    marginBottom: 16,
+    textAlign: 'center',
+  },
+  datePickerInline: {
+    width: '100%',
+    height: 200,
+  },
+  datePickerButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
+    marginTop: 16,
+  },
+  datePickerButton: {
+    flex: 0.48,
   },
   modalTitle: {
     textAlign: 'center',
