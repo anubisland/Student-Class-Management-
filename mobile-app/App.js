@@ -53,7 +53,13 @@ const StudentClassManagementApp = () => {
   const [scheduleModalVisible, setScheduleModalVisible] = useState(false);
   const [classModalVisible, setClassModalVisible] = useState(false);
   const [reportModalVisible, setReportModalVisible] = useState(false);
+  const [classDetailsModalVisible, setClassDetailsModalVisible] = useState(false);
   const [monthPickerVisible, setMonthPickerVisible] = useState(false);
+
+  // Date/Time picker states
+  const [scheduleTimePickerVisible, setScheduleTimePickerVisible] = useState(false);
+  const [classDatePickerVisible, setClassDatePickerVisible] = useState(false);
+  const [classTimePickerVisible, setClassTimePickerVisible] = useState(false);
   
   // Form states
   const [selectedStudent, setSelectedStudent] = useState('kareem');
@@ -475,6 +481,51 @@ const StudentClassManagementApp = () => {
     }
   };
 
+  // Schedule time picker handler
+  const onScheduleTimeChange = (event, selectedTime) => {
+    setScheduleTimePickerVisible(false);
+    if (selectedTime) {
+      setNewScheduleTime(selectedTime);
+    }
+  };
+
+  // Class date picker handler
+  const onClassDateChange = (event, selectedDate) => {
+    setClassDatePickerVisible(false);
+    if (selectedDate) {
+      setNewClassDate(selectedDate);
+    }
+  };
+
+  // Class time picker handler
+  const onClassTimeChange = (event, selectedTime) => {
+    setClassTimePickerVisible(false);
+    if (selectedTime) {
+      setNewClassTime(selectedTime);
+    }
+  };
+
+  // Month navigation helpers
+  const goToPreviousMonth = () => {
+    const [year, month] = currentMonth.split('-').map(Number);
+    const newDate = new Date(year, month - 2, 1); // month - 2 because month is 1-indexed and we want previous
+    const monthString = `${newDate.getFullYear()}-${String(newDate.getMonth() + 1).padStart(2, '0')}`;
+    setCurrentMonth(monthString);
+    setMonthPickerDate(newDate);
+  };
+
+  const goToNextMonth = () => {
+    const [year, month] = currentMonth.split('-').map(Number);
+    const newDate = new Date(year, month, 1); // month because it's already 1-indexed and we want next
+    const monthString = `${newDate.getFullYear()}-${String(newDate.getMonth() + 1).padStart(2, '0')}`;
+    setCurrentMonth(monthString);
+    setMonthPickerDate(newDate);
+  };
+
+  const goToCurrentMonth = () => {
+    setCurrentMonthToNow();
+  };
+
   // Calculate totals
   const kareemStats = getStudentStats('kareem', currentMonth);
   const saraHanaStats = getStudentStats('saraHana', currentMonth);
@@ -521,17 +572,46 @@ const StudentClassManagementApp = () => {
         <Card style={styles.card}>
           <Card.Title title="Monthly Overview" />
           <Card.Content>
-            <Button 
-              mode="outlined" 
-              onPress={() => setMonthPickerVisible(true)}
-              style={styles.monthSelector}
+            {/* Month Navigation */}
+            <View style={styles.monthNavigation}>
+              <Button
+                mode="contained"
+                onPress={goToPreviousMonth}
+                style={styles.monthNavButton}
+                compact
+                icon="chevron-left"
+              >
+                Prev
+              </Button>
+
+              <Button
+                mode="outlined"
+                onPress={() => setMonthPickerVisible(true)}
+                style={styles.monthSelectorCenter}
+              >
+                {getMonthName(currentMonth)}
+              </Button>
+
+              <Button
+                mode="contained"
+                onPress={goToNextMonth}
+                style={styles.monthNavButton}
+                compact
+                icon="chevron-right"
+                contentStyle={styles.monthNavButtonRight}
+              >
+                Next
+              </Button>
+            </View>
+
+            <Button
+              mode="text"
+              onPress={goToCurrentMonth}
+              style={styles.todayButton}
+              compact
             >
-              Select Month: {getMonthName(currentMonth)}
+              Go to Current Month
             </Button>
-            
-            <Text variant="headlineLarge" style={styles.currentMonth}>
-              {getMonthName(currentMonth)}
-            </Text>
             
             <View style={styles.statsContainer}>
               <Surface style={[styles.studentCard, { backgroundColor: '#EBF8FF' }]}>
@@ -561,33 +641,72 @@ const StudentClassManagementApp = () => {
         </Card>
 
         {/* Student Classes Overview */}
-        {students.map(student => (
-          <Card key={student.key} style={styles.card}>
-            <Card.Title 
-              title={`${student.name}'s Classes`}
-              titleStyle={{ color: student.color }}
-            />
-            <Card.Content>
-              <Text>Classes this month: {getStudentStats(student.key, currentMonth).classCount}</Text>
-              <View style={styles.classesPreview}>
-                {getMonthlyClasses(student.key, currentMonth).slice(0, 3).map(cls => (
-                  <Chip 
-                    key={cls.id} 
-                    style={styles.classChip}
-                    textStyle={styles.classChipText}
-                  >
-                    {formatDisplayDate(cls.date, cls.time)}
-                  </Chip>
-                ))}
-                {getMonthlyClasses(student.key, currentMonth).length > 3 && (
-                  <Text style={styles.moreClasses}>
-                    +{getMonthlyClasses(student.key, currentMonth).length - 3} more
+        {students.map(student => {
+          const studentClasses = getMonthlyClasses(student.key, currentMonth);
+          const stats = getStudentStats(student.key, currentMonth);
+          return (
+            <Card
+              key={student.key}
+              style={styles.card}
+              onPress={() => {
+                setSelectedStudent(student.key);
+                setClassDetailsModalVisible(true);
+              }}
+            >
+              <Card.Title
+                title={`${student.name}'s Classes`}
+                titleStyle={{ color: student.color }}
+                subtitle={`Tap to view all classes`}
+                subtitleStyle={styles.cardSubtitle}
+                right={(props) => (
+                  <Text style={[styles.classCountBadge, { backgroundColor: student.color }]}>
+                    {stats.classCount}
                   </Text>
                 )}
-              </View>
-            </Card.Content>
-          </Card>
-        ))}
+              />
+              <Card.Content>
+                <View style={styles.studentStatsRow}>
+                  <Text>Classes: {stats.classCount}</Text>
+                  <Text style={{ color: '#10B981' }}>Total: ${stats.total.toFixed(2)}</Text>
+                </View>
+
+                {studentClasses.length > 0 ? (
+                  <>
+                    <Text style={styles.recentClassesLabel}>Recent classes:</Text>
+                    <View style={styles.classesPreview}>
+                      {studentClasses.slice(0, 3).map(cls => (
+                        <Chip
+                          key={cls.id}
+                          style={[styles.classChip, { borderColor: student.color }]}
+                          textStyle={styles.classChipText}
+                          icon="calendar"
+                          compact
+                        >
+                          {cls.date} @ {cls.time}
+                        </Chip>
+                      ))}
+                    </View>
+                    {studentClasses.length > 3 && (
+                      <Button
+                        mode="text"
+                        onPress={() => {
+                          setSelectedStudent(student.key);
+                          setClassDetailsModalVisible(true);
+                        }}
+                        style={styles.viewAllButton}
+                        compact
+                      >
+                        View all {studentClasses.length} classes →
+                      </Button>
+                    )}
+                  </>
+                ) : (
+                  <Text style={styles.noClassesPreview}>No classes scheduled this month</Text>
+                )}
+              </Card.Content>
+            </Card>
+          );
+        })}
 
         {/* Quick Actions */}
         <Card style={styles.card}>
@@ -730,24 +849,33 @@ const StudentClassManagementApp = () => {
           
           <Button
             mode="outlined"
-            onPress={() => {
-              // Time picker will be handled by DateTimePicker
-            }}
+            onPress={() => setScheduleTimePickerVisible(true)}
             style={styles.timeButton}
+            icon="clock-outline"
           >
             Time: {newScheduleTime.toTimeString().substring(0, 5)}
           </Button>
-          
+
+          {scheduleTimePickerVisible && (
+            <DateTimePicker
+              value={newScheduleTime}
+              mode="time"
+              is24Hour={true}
+              display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+              onChange={onScheduleTimeChange}
+            />
+          )}
+
           <View style={styles.modalButtons}>
-            <Button 
-              mode="outlined" 
+            <Button
+              mode="outlined"
               onPress={() => setScheduleModalVisible(false)}
               style={styles.modalButtonHalf}
             >
               Cancel
             </Button>
-            <Button 
-              mode="contained" 
+            <Button
+              mode="contained"
               onPress={addSchedule}
               style={styles.modalButtonHalf}
             >
@@ -799,34 +927,51 @@ const StudentClassManagementApp = () => {
           
           <Button
             mode="outlined"
-            onPress={() => {
-              // Date picker will be handled by DateTimePicker
-            }}
+            onPress={() => setClassDatePickerVisible(true)}
             style={styles.dateButton}
+            icon="calendar"
           >
             Date: {formatDate(newClassDate)}
           </Button>
-          
+
+          {classDatePickerVisible && (
+            <DateTimePicker
+              value={newClassDate}
+              mode="date"
+              display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+              onChange={onClassDateChange}
+            />
+          )}
+
           <Button
             mode="outlined"
-            onPress={() => {
-              // Time picker will be handled by DateTimePicker
-            }}
+            onPress={() => setClassTimePickerVisible(true)}
             style={styles.timeButton}
+            icon="clock-outline"
           >
             Time: {newClassTime.toTimeString().substring(0, 5)}
           </Button>
-          
+
+          {classTimePickerVisible && (
+            <DateTimePicker
+              value={newClassTime}
+              mode="time"
+              is24Hour={true}
+              display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+              onChange={onClassTimeChange}
+            />
+          )}
+
           <View style={styles.modalButtons}>
-            <Button 
-              mode="outlined" 
+            <Button
+              mode="outlined"
               onPress={() => setClassModalVisible(false)}
               style={styles.modalButtonHalf}
             >
               Cancel
             </Button>
-            <Button 
-              mode="contained" 
+            <Button
+              mode="contained"
               onPress={addClass}
               style={styles.modalButtonHalf}
             >
@@ -836,10 +981,75 @@ const StudentClassManagementApp = () => {
         </Modal>
       </Portal>
 
+      {/* Class Details Modal (Full List) */}
+      <Portal>
+        <Modal
+          visible={classDetailsModalVisible}
+          onDismiss={() => setClassDetailsModalVisible(false)}
+          contentContainerStyle={styles.modalLarge}
+        >
+          <Text variant="headlineSmall" style={styles.modalTitle}>
+            All Classes - {getMonthName(currentMonth)}
+          </Text>
+
+          <Text style={styles.modalLabel}>Select Student:</Text>
+          <View style={styles.studentSelector}>
+            {students.map(student => (
+              <Chip
+                key={student.key}
+                selected={selectedStudent === student.key}
+                onPress={() => setSelectedStudent(student.key)}
+                style={styles.studentChip}
+              >
+                {student.name}
+              </Chip>
+            ))}
+          </View>
+
+          <Surface style={styles.classListHeader}>
+            <Text variant="titleMedium" style={{ color: students.find(s => s.key === selectedStudent)?.color }}>
+              {students.find(s => s.key === selectedStudent)?.name}'s Classes
+            </Text>
+            <Text>Total: {getMonthlyClasses(selectedStudent, currentMonth).length} classes</Text>
+          </Surface>
+
+          <ScrollView style={styles.classListScroll}>
+            {getMonthlyClasses(selectedStudent, currentMonth).length === 0 ? (
+              <Text style={styles.noClassesText}>No classes scheduled for this month</Text>
+            ) : (
+              getMonthlyClasses(selectedStudent, currentMonth).map((cls, index) => (
+                <Surface key={cls.id} style={styles.classListItem}>
+                  <View style={styles.classListItemContent}>
+                    <Text variant="titleSmall">{index + 1}. {formatDisplayDate(cls.date)}</Text>
+                    <Text style={styles.classTimeText}>at {cls.time}</Text>
+                  </View>
+                  <Button
+                    mode="text"
+                    textColor="#EF4444"
+                    onPress={() => removeClass(selectedStudent, cls.id)}
+                    compact
+                  >
+                    Delete
+                  </Button>
+                </Surface>
+              ))
+            )}
+          </ScrollView>
+
+          <Button
+            mode="contained"
+            onPress={() => setClassDetailsModalVisible(false)}
+            style={styles.modalButton}
+          >
+            Close
+          </Button>
+        </Modal>
+      </Portal>
+
       {/* Reports Modal */}
       <Portal>
-        <Modal 
-          visible={reportModalVisible} 
+        <Modal
+          visible={reportModalVisible}
           onDismiss={() => setReportModalVisible(false)}
           contentContainerStyle={styles.modal}
         >
@@ -910,9 +1120,8 @@ const StudentClassManagementApp = () => {
       <FAB
         style={styles.fab}
         icon="calendar-multiple"
-        onPress={() => {
-          // Show class details - you could implement another modal here
-        }}
+        label="View Classes"
+        onPress={() => setClassDetailsModalVisible(true)}
       />
     </PaperProvider>
   );
@@ -944,13 +1153,22 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     elevation: 4,
   },
-  monthSelector: {
-    marginBottom: 16,
+  monthNavigation: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
   },
-  currentMonth: {
-    textAlign: 'center',
-    color: '#3B82F6',
-    fontWeight: 'bold',
+  monthNavButton: {
+    flex: 0.25,
+  },
+  monthNavButtonRight: {
+    flexDirection: 'row-reverse',
+  },
+  monthSelectorCenter: {
+    flex: 0.45,
+  },
+  todayButton: {
     marginBottom: 16,
   },
   statsContainer: {
@@ -976,20 +1194,55 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginVertical: 4,
   },
+  cardSubtitle: {
+    fontSize: 12,
+    color: '#9CA3AF',
+  },
+  classCountBadge: {
+    color: 'white',
+    fontWeight: 'bold',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+    marginRight: 16,
+    fontSize: 16,
+    overflow: 'hidden',
+  },
+  studentStatsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+    paddingBottom: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E7EB',
+  },
+  recentClassesLabel: {
+    fontSize: 12,
+    color: '#6B7280',
+    marginBottom: 8,
+  },
   classesPreview: {
-    marginTop: 8,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 4,
   },
   classChip: {
     marginVertical: 2,
-    marginRight: 8,
+    marginRight: 4,
+    borderWidth: 1,
   },
   classChipText: {
-    fontSize: 12,
+    fontSize: 11,
   },
-  moreClasses: {
-    fontStyle: 'italic',
-    color: '#6B7280',
+  viewAllButton: {
     marginTop: 8,
+    alignSelf: 'flex-start',
+  },
+  noClassesPreview: {
+    fontStyle: 'italic',
+    color: '#9CA3AF',
+    textAlign: 'center',
+    paddingVertical: 16,
   },
   actionButtonsContainer: {
     flexDirection: 'row',
@@ -1012,6 +1265,46 @@ const styles = StyleSheet.create({
     margin: 20,
     borderRadius: 8,
     maxHeight: '80%',
+  },
+  modalLarge: {
+    backgroundColor: 'white',
+    padding: 20,
+    margin: 20,
+    borderRadius: 8,
+    maxHeight: '90%',
+  },
+  classListHeader: {
+    padding: 12,
+    marginBottom: 8,
+    borderRadius: 8,
+    elevation: 1,
+    backgroundColor: '#F3F4F6',
+  },
+  classListScroll: {
+    maxHeight: 300,
+    marginBottom: 16,
+  },
+  classListItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 12,
+    marginVertical: 4,
+    borderRadius: 8,
+    elevation: 1,
+  },
+  classListItemContent: {
+    flex: 1,
+  },
+  classTimeText: {
+    color: '#6B7280',
+    fontSize: 14,
+  },
+  noClassesText: {
+    textAlign: 'center',
+    color: '#6B7280',
+    fontStyle: 'italic',
+    padding: 20,
   },
   modalTitle: {
     textAlign: 'center',
