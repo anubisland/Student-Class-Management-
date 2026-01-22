@@ -1,4 +1,6 @@
 {
+  "name": "StudentApp",
+  "displayName": "Student Class Management",
   "expo": {
     "name": "Student Class Management",
     "slug": "student-class-management",

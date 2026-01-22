@@ -24,7 +24,6 @@ import {
   Surface,
 } from 'react-native-paper';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import DateTimePicker from '@react-native-community/datetimepicker';
 
 const theme = {
   ...DefaultTheme,
@@ -203,6 +202,35 @@ const StudentClassManagementApp = () => {
     const hourStr = String(selectedScheduleHour).padStart(2, '0');
     const minStr = String(selectedScheduleMinute).padStart(2, '0');
     return `${hourStr}:${minStr}`;
+  };
+
+  // Handle time input changes for manual time entry
+  const handleTimeInputChange = (text, isSchedule = false) => {
+    // Allow only numbers and colon
+    const cleanedText = text.replace(/[^0-9:]/g, '');
+
+    if (isSchedule) {
+      setScheduleTimeInputText(cleanedText);
+    } else {
+      setTimeInputText(cleanedText);
+    }
+
+    // Parse the time if it's in valid format (HH:MM)
+    const timeMatch = cleanedText.match(/^(\d{1,2}):(\d{2})$/);
+    if (timeMatch) {
+      const hours = parseInt(timeMatch[1], 10);
+      const mins = parseInt(timeMatch[2], 10);
+
+      if (hours >= 0 && hours <= 23 && mins >= 0 && mins <= 59) {
+        if (isSchedule) {
+          setSelectedScheduleHour(hours);
+          setSelectedScheduleMinute(mins);
+        } else {
+          setSelectedHour(hours);
+          setSelectedMinute(mins);
+        }
+      }
+    }
   };
 
   // Schedule management
@@ -902,22 +930,28 @@ const StudentClassManagementApp = () => {
             ))}
           </View>
           
-          <Button
+          <Text style={styles.modalLabel}>Select Date:</Text>
+          <TextInput
+            label="Date (YYYY-MM-DD)"
+            value={formatDate(newClassDate)}
+            onChangeText={(text) => {
+              // Validate and parse date
+              const dateMatch = text.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+              if (dateMatch) {
+                const year = parseInt(dateMatch[1], 10);
+                const month = parseInt(dateMatch[2], 10) - 1;
+                const day = parseInt(dateMatch[3], 10);
+                const parsedDate = new Date(year, month, day);
+                if (!isNaN(parsedDate.getTime())) {
+                  setNewClassDate(parsedDate);
+                }
+              }
+            }}
+            placeholder="YYYY-MM-DD"
+            style={styles.dateInput}
             mode="outlined"
-            onPress={() => setShowDatePicker(true)}
-            style={styles.dateButton}
-          >
-            Date: {formatDate(newClassDate)}
-          </Button>
-          
-          {showDatePicker && (
-            <DateTimePicker
-              value={newClassDate}
-              mode="date"
-              display="default"
-              onChange={onDateChange}
-            />
-          )}
+          />
+          <Text style={styles.dateHint}>Format: YYYY-MM-DD (e.g., 2025-01-21)</Text>
           
           <Text style={styles.modalLabel}>Select Time: {getFormattedTime()}</Text>
           
@@ -1354,6 +1388,15 @@ const styles = StyleSheet.create({
   },
   dateButton: {
     marginVertical: 8,
+  },
+  dateInput: {
+    marginBottom: 8,
+  },
+  dateHint: {
+    fontSize: 12,
+    color: '#6B7280',
+    fontStyle: 'italic',
+    marginBottom: 16,
   },
   modalButtons: {
     flexDirection: 'row',

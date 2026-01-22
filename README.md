@@ -1,6 +1,6 @@
 # Student Class Management System
 
-A comprehensive web application for managing classes, schedules, and monthly reports for two students: **Kareem** and **Sara_Hana**.
+A comprehensive application for managing classes, schedules, and monthly reports for two students: **Kareem** and **Sara_Hana**. Available as both a **web application** and a **mobile app** (Android/iOS).
 
 ## Features
 
@@ -72,10 +72,57 @@ A comprehensive web application for managing classes, schedules, and monthly rep
 ### File Structure
 ```
 Student-Class-Management-/
-├── index.html          # Main HTML interface
-├── script.js          # JavaScript functionality
-└── README.md          # This documentation file
+├── index.html              # Web app HTML interface
+├── script.js               # Web app JavaScript
+├── README.md               # This documentation
+├── mobile-app/             # React Native mobile app
+│   ├── App.js              # Main mobile app component
+│   ├── app.json            # App configuration
+│   ├── package.json        # Dependencies
+│   └── android/            # Android native code
+└── react-native-app/       # Alternative React Native implementation
 ```
+
+## Mobile App
+
+The mobile app provides the same functionality as the web app, built with React Native for Android and iOS.
+
+### Building the Android APK
+
+Due to Windows path length limitations with React Native's new architecture, build from a short path:
+
+```bash
+# 1. Copy project to short path
+mkdir C:\temp\student-app
+xcopy /E mobile-app C:\temp\student-app
+
+# 2. Install dependencies
+cd C:\temp\student-app
+npm install
+
+# 3. Create local.properties (use forward slashes)
+echo sdk.dir=C:/Users/YOUR_USERNAME/AppData/Local/Android/Sdk > android/local.properties
+
+# 4. Build release APK
+cd android
+.\gradlew.bat assembleRelease
+
+# APK will be at: android/app/build/outputs/apk/release/app-release.apk
+```
+
+### Installing on Emulator/Device
+
+```bash
+adb install -r app-release.apk
+adb shell am start -n com.studentapp/.MainActivity
+```
+
+### Mobile App Features
+- All web app features in a native mobile interface
+- AsyncStorage for persistent local data
+- Material Design UI with React Native Paper
+- Share reports via native sharing
+- Works offline
 
 ## Features in Detail
 
