@@ -5,7 +5,10 @@ import {
   ScrollView,
   StatusBar,
   Alert,
+  Share,
+  PermissionsAndroid,
   Platform,
+  Linking,
 } from 'react-native';
 import {
   Provider as PaperProvider,
@@ -16,15 +19,12 @@ import {
   Button,
   TextInput,
   Chip,
-  FAB,
   Portal,
   Modal,
   Surface,
 } from 'react-native-paper';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import RNFS from 'react-native-fs';
-import Share from 'react-native-share';
 
 const theme = {
   ...DefaultTheme,
@@ -37,7 +37,7 @@ const theme = {
   },
 };
 
-const App = () => {
+const StudentClassManagementApp = () => {
   // State management
   const [prices, setPrices] = useState({ kareem: '25.00', saraHana: '30.00' });
   const [classes, setClasses] = useState({ kareem: [], saraHana: [] });
@@ -48,28 +48,37 @@ const App = () => {
   
   // Modal states
   const [priceModalVisible, setPriceModalVisible] = useState(false);
-  const [scheduleModalVisible, setScheduleModalVisible] = useState(false);
   const [classModalVisible, setClassModalVisible] = useState(false);
   const [reportModalVisible, setReportModalVisible] = useState(false);
-  const [monthPickerVisible, setMonthPickerVisible] = useState(false);
+  const [scheduleModalVisible, setScheduleModalVisible] = useState(false);
   
   // Form states
   const [selectedStudent, setSelectedStudent] = useState('kareem');
-  const [newScheduleDay, setNewScheduleDay] = useState('');
-  const [newScheduleTime, setNewScheduleTime] = useState(new Date());
   const [newClassDate, setNewClassDate] = useState(new Date());
-  const [newClassTime, setNewClassTime] = useState(new Date());
-  const [monthPickerDate, setMonthPickerDate] = useState(new Date());
+  const [selectedDay, setSelectedDay] = useState('Monday');
+  const [selectedTime, setSelectedTime] = useState('10:00');
+  const [selectedClassTime, setSelectedClassTime] = useState('10:00');
+  const [selectedHour, setSelectedHour] = useState(10);
+  const [selectedMinute, setSelectedMinute] = useState(0);
+  const [selectedScheduleHour, setSelectedScheduleHour] = useState(10);
+  const [selectedScheduleMinute, setSelectedScheduleMinute] = useState(0);
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [timeInputMode, setTimeInputMode] = useState('selector'); // 'selector' or 'input'
+  const [scheduleTimeInputMode, setScheduleTimeInputMode] = useState('selector');
+  const [timeInputText, setTimeInputText] = useState('10:00');
+  const [scheduleTimeInputText, setScheduleTimeInputText] = useState('10:00');
+  const [showQuickMinutes, setShowQuickMinutes] = useState(true);
 
   const students = [
     { key: 'kareem', name: 'Kareem', color: '#3B82F6' },
     { key: 'saraHana', name: 'Sara_Hana', color: '#EC4899' }
   ];
 
-  const weekDays = [
-    'sunday', 'monday', 'tuesday', 'wednesday', 
-    'thursday', 'friday', 'saturday'
-  ];
+  const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+  const timeSlots = ['06:00', '07:00', '08:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00', '21:00', '22:00', '23:00'];
+  const hours = Array.from({length: 24}, (_, i) => i);
+  const minutes = Array.from({length: 60}, (_, i) => i);
+  const quickMinutes = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55];
 
   // Initialize app
   useEffect(() => {
@@ -94,13 +103,23 @@ const App = () => {
   // Database operations
   const saveToDatabase = async (key, data) => {
     try {
-      await AsyncStorage.setItem(key, JSON.stringify(data));
+      console.log(`[SAVE] Attempting to save key: ${key}`);
+      console.log(`[SAVE] Data to save:`, JSON.stringify(data, null, 2));
+      
+      const dataString = JSON.stringify(data);
+      await AsyncStorage.setItem(key, dataString);
+      
+      // Verify save by reading back
+      const savedData = await AsyncStorage.getItem(key);
+      console.log(`[SAVE] Successfully saved and verified ${key}`);
+      
       setSaveStatus('✓ Saved');
       setTimeout(() => setSaveStatus(''), 2000);
       return true;
     } catch (error) {
-      console.error('Save error:', error);
+      console.error(`[SAVE] Error saving ${key}:`, error);
       setSaveStatus('✗ Save Failed');
+      setTimeout(() => setSaveStatus(''), 3000);
       return false;
     }
   };
@@ -125,7 +144,7 @@ const App = () => {
       kareem: [],
       saraHana: []
     });
-    
+
     const loadedSchedules = await loadFromDatabase('student-schedules', {
       kareem: [],
       saraHana: []
@@ -144,21 +163,6 @@ const App = () => {
     return `${year}-${month}-${day}`;
   };
 
-  const formatDisplayDate = (dateString, timeString = null) => {
-    const date = new Date(dateString + 'T00:00:00');
-    const options = { 
-      weekday: 'short', 
-      year: 'numeric', 
-      month: 'short', 
-      day: 'numeric' 
-    };
-    let formatted = date.toLocaleDateString('en-US', options);
-    if (timeString) {
-      formatted += ` at ${timeString}`;
-    }
-    return formatted;
-  };
-
   const getMonthName = (monthString) => {
     const [year, month] = monthString.split('-');
     const date = new Date(parseInt(year), parseInt(month) - 1, 1);
@@ -172,55 +176,300 @@ const App = () => {
     const now = new Date();
     const monthString = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
     setCurrentMonth(monthString);
-    setMonthPickerDate(now);
+  };
+
+  const navigateMonth = (direction) => {
+    const [year, month] = currentMonth.split('-');
+    const currentDate = new Date(parseInt(year), parseInt(month) - 1, 1);
+    currentDate.setMonth(currentDate.getMonth() + direction);
+    const newMonthString = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}`;
+    setCurrentMonth(newMonthString);
+  };
+
+  const onDateChange = (event, selectedDate) => {
+    setShowDatePicker(false);
+    if (selectedDate) {
+      setNewClassDate(selectedDate);
+    }
+  };
+
+  const getFormattedTime = () => {
+    const hourStr = String(selectedHour).padStart(2, '0');
+    const minStr = String(selectedMinute).padStart(2, '0');
+    return `${hourStr}:${minStr}`;
+  };
+
+  const getFormattedScheduleTime = () => {
+    const hourStr = String(selectedScheduleHour).padStart(2, '0');
+    const minStr = String(selectedScheduleMinute).padStart(2, '0');
+    return `${hourStr}:${minStr}`;
   };
 
   // Schedule management
-  const addSchedule = async () => {
-    if (!newScheduleDay) {
-      Alert.alert('Error', 'Please select a day');
-      return;
-    }
-
-    const timeString = newScheduleTime.toTimeString().substring(0, 5);
+  const addSchedule = () => {
+    console.log('=== ADD SCHEDULE BUTTON PRESSED ===');
+    console.log('selectedStudent:', selectedStudent);
+    console.log('selectedDay:', selectedDay);
+    console.log('selectedScheduleHour:', selectedScheduleHour);
+    console.log('selectedScheduleMinute:', selectedScheduleMinute);
+    
+    // Get student name for display
+    const studentName = students.find(s => s.key === selectedStudent)?.name;
+    console.log('studentName:', studentName);
+    
+    // Format the time
+    const formattedTime = getFormattedScheduleTime();
+    console.log('formattedTime:', formattedTime);
+    
+    // Create the new schedule object
     const newSchedule = {
       id: Date.now(),
-      day: newScheduleDay,
-      time: timeString
+      day: selectedDay,
+      time: formattedTime,
+      student: selectedStudent
     };
-
-    const updatedSchedules = {
-      ...schedules,
-      [selectedStudent]: [...(schedules[selectedStudent] || []), newSchedule]
-    };
-
-    setSchedules(updatedSchedules);
-    await saveToDatabase('student-schedules', updatedSchedules);
-
-    setNewScheduleDay('');
-    setNewScheduleTime(new Date());
-    setScheduleModalVisible(false);
+    
+    console.log('newSchedule created:', newSchedule);
+    
+    // Get current schedules from state
+    const currentSchedules = { ...schedules };
+    console.log('currentSchedules before:', currentSchedules);
+    
+    // Initialize array if it doesn't exist
+    if (!currentSchedules[selectedStudent]) {
+      currentSchedules[selectedStudent] = [];
+    }
+    
+    // Add the new schedule
+    currentSchedules[selectedStudent].push(newSchedule);
+    console.log('currentSchedules after adding:', currentSchedules);
+    
+    // Update state immediately
+    setSchedules(currentSchedules);
+    console.log('State updated with setSchedules');
+    
+    // Save to AsyncStorage
+    AsyncStorage.setItem('student-schedules', JSON.stringify(currentSchedules))
+      .then(() => {
+        console.log('Successfully saved to AsyncStorage');
+        setScheduleModalVisible(false);
+        Alert.alert(
+          'Schedule Added!',
+          `${studentName}: ${selectedDay} at ${formattedTime}`
+        );
+      })
+      .catch((error) => {
+        console.error('Failed to save to AsyncStorage:', error);
+        Alert.alert('Error', 'Failed to save schedule');
+      });
   };
 
-  const removeSchedule = async (student, scheduleId) => {
-    const updatedSchedules = {
-      ...schedules,
-      [student]: schedules[student].filter(s => s.id !== scheduleId)
-    };
+  const debugSchedules = () => {
+    console.log('=== DEBUG SCHEDULES ===');
+    console.log('Current schedules state:', schedules);
+    AsyncStorage.getItem('student-schedules')
+      .then(data => {
+        console.log('Schedules in AsyncStorage:', data ? JSON.parse(data) : 'null');
+      })
+      .catch(error => {
+        console.error('Error reading from AsyncStorage:', error);
+      });
+  };
 
-    setSchedules(updatedSchedules);
-    await saveToDatabase('student-schedules', updatedSchedules);
+  const generateClassesForStudent = async (studentKey) => {
+    try {
+      console.log('=== Generating classes for student:', studentKey);
+      console.log('Current schedules:', schedules);
+      console.log('Student schedules:', schedules[studentKey]);
+      console.log('Current month:', currentMonth);
+      
+      // Validate current month
+      if (!currentMonth) {
+        Alert.alert('Error', 'Please navigate to a month first');
+        return;
+      }
+      
+      // Get student schedules
+      const studentSchedules = schedules[studentKey] || [];
+      console.log('Found', studentSchedules.length, 'schedules for', studentKey);
+      
+      if (studentSchedules.length === 0) {
+        const studentName = students.find(s => s.key === studentKey)?.name;
+        Alert.alert('No Schedules', `Please add schedules for ${studentName} first using the "Add Schedule" button.`);
+        return;
+      }
+      
+      // Parse current month
+      const [year, month] = currentMonth.split('-');
+      const yearInt = parseInt(year);
+      const monthInt = parseInt(month);
+      const daysInMonth = new Date(yearInt, monthInt, 0).getDate();
+      
+      console.log(`Processing ${getMonthName(currentMonth)} - ${daysInMonth} days`);
+      
+      // Generate classes
+      let totalGenerated = 0;
+      const updatedClasses = { ...classes };
+      if (!updatedClasses[studentKey]) {
+        updatedClasses[studentKey] = [];
+      }
+      
+      // Process each schedule
+      studentSchedules.forEach((schedule, scheduleIndex) => {
+        console.log(`Processing schedule ${scheduleIndex + 1}:`, schedule);
+        
+        // Check each day in the month
+        for (let day = 1; day <= daysInMonth; day++) {
+          const checkDate = new Date(yearInt, monthInt - 1, day);
+          const dayOfWeek = checkDate.toLocaleDateString('en-US', { weekday: 'long' });
+          
+          if (dayOfWeek === schedule.day) {
+            const dateString = formatDate(checkDate);
+            console.log(`Found ${schedule.day} on ${dateString}`);
+            
+            // Check if class already exists
+            const existingClass = updatedClasses[studentKey].find(
+              cls => cls.date === dateString && cls.time === schedule.time
+            );
+            
+            if (!existingClass) {
+              const newClass = {
+                id: `class_${studentKey}_${dateString}_${schedule.time}_${Date.now()}_${Math.random().toString(36).substring(2)}`,
+                date: dateString,
+                time: schedule.time,
+                student: studentKey,
+                timestamp: new Date().toISOString(),
+                generated: true
+              };
+              
+              updatedClasses[studentKey].push(newClass);
+              totalGenerated++;
+              console.log('Generated class:', newClass);
+            } else {
+              console.log('Class already exists for', dateString, schedule.time);
+            }
+          }
+        }
+      });
+      
+      console.log(`Total classes generated: ${totalGenerated}`);
+      
+      // Save to state and database
+      setClasses(updatedClasses);
+      const saveResult = await saveToDatabase('student-classes', updatedClasses);
+      
+      if (saveResult) {
+        const studentName = students.find(s => s.key === studentKey)?.name;
+        if (totalGenerated > 0) {
+          Alert.alert('Success!', `Generated ${totalGenerated} classes for ${studentName} in ${getMonthName(currentMonth)}`);
+        } else {
+          Alert.alert('Info', `No new classes to generate for ${studentName}. All scheduled classes already exist.`);
+        }
+      } else {
+        Alert.alert('Error', 'Failed to save classes to database');
+      }
+      
+    } catch (error) {
+      console.error('Generate classes error:', error);
+      Alert.alert('Error', `Failed to generate classes: ${error.message}`);
+    }
+  };
+
+  const generateClasses = async () => {
+    try {
+      console.log('Current schedules:', schedules);
+      console.log('Current month:', currentMonth);
+      
+      // Validate inputs
+      if (!currentMonth) {
+        Alert.alert('Error', 'Please select a month first');
+        return;
+      }
+      
+      const hasSchedules = Object.values(schedules).some(arr => arr && arr.length > 0);
+      if (!hasSchedules) {
+        Alert.alert('No Schedules', 'Please add schedules first before generating classes');
+        return;
+      }
+      
+      const [year, month] = currentMonth.split('-');
+      const daysInMonth = new Date(parseInt(year), parseInt(month), 0).getDate();
+      console.log('Days in month:', daysInMonth, 'for', year, month);
+      
+      const generatedClasses = { ...classes };
+      let totalGenerated = 0;
+
+      // Generate classes for each student based on their schedules
+      Object.keys(schedules).forEach(studentKey => {
+        const studentSchedules = schedules[studentKey] || [];
+        console.log(`Processing ${studentKey} schedules:`, studentSchedules);
+        
+        studentSchedules.forEach(schedule => {
+          console.log(`Processing schedule:`, schedule);
+          
+          // Find all dates in the month that match this day of the week
+          for (let day = 1; day <= daysInMonth; day++) {
+            const date = new Date(parseInt(year), parseInt(month) - 1, day);
+            const dayName = date.toLocaleDateString('en-US', { weekday: 'long' });
+            
+            if (dayName === schedule.day) {
+              const dateString = formatDate(date);
+              console.log(`Found matching day: ${dateString} (${dayName})`);
+              
+              // Check if class already exists for this date/time
+              const existingClass = generatedClasses[studentKey]?.find(
+                cls => cls.date === dateString && cls.time === schedule.time
+              );
+              
+              if (!existingClass) {
+                const newClass = {
+                  id: `generated_${studentKey}_${dateString}_${schedule.time}_${Date.now()}_${Math.random()}`,
+                  date: dateString,
+                  time: schedule.time,
+                  timestamp: new Date().toISOString(),
+                  generated: true,
+                  student: studentKey
+                };
+                
+                if (!generatedClasses[studentKey]) {
+                  generatedClasses[studentKey] = [];
+                }
+                generatedClasses[studentKey].push(newClass);
+                totalGenerated++;
+                console.log('Generated class:', newClass);
+              } else {
+                console.log('Class already exists for', dateString, schedule.time);
+              }
+            }
+          }
+        });
+      });
+
+      console.log('Total generated:', totalGenerated);
+      console.log('Final classes:', generatedClasses);
+
+      setClasses(generatedClasses);
+      const saved = await saveToDatabase('student-classes', generatedClasses);
+      
+      if (saved) {
+        if (totalGenerated > 0) {
+          Alert.alert('Success', `Generated ${totalGenerated} classes for ${getMonthName(currentMonth)}!`);
+        } else {
+          Alert.alert('Info', 'No new classes to generate. All scheduled classes already exist.');
+        }
+      } else {
+        throw new Error('Failed to save classes to database');
+      }
+    } catch (error) {
+      console.error('Generate classes error:', error);
+      Alert.alert('Error', 'Failed to generate classes: ' + error.message);
+    }
   };
 
   // Class management
   const addClass = async () => {
     const dateString = formatDate(newClassDate);
-    const timeString = newClassTime.toTimeString().substring(0, 5);
-
-    if (classExists(selectedStudent, dateString, timeString)) {
-      Alert.alert('Error', 'A class already exists for this date and time');
-      return;
-    }
+    const timeString = getFormattedTime();
 
     const newClass = {
       id: Date.now(),
@@ -238,207 +487,120 @@ const App = () => {
     await saveToDatabase('student-classes', updatedClasses);
 
     setNewClassDate(new Date());
-    setNewClassTime(new Date());
+    setSelectedHour(10);
+    setSelectedMinute(0);
     setClassModalVisible(false);
-  };
-
-  const removeClass = async (student, classId) => {
-    Alert.alert(
-      'Delete Class',
-      'Are you sure you want to delete this class?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Delete',
-          style: 'destructive',
-          onPress: async () => {
-            const updatedClasses = {
-              ...classes,
-              [student]: classes[student].filter(cls => cls.id !== classId)
-            };
-            setClasses(updatedClasses);
-            await saveToDatabase('student-classes', updatedClasses);
-          }
-        }
-      ]
-    );
-  };
-
-  const classExists = (student, date, time) => {
-    if (!classes[student]) return false;
-    return classes[student].some(cls => cls.date === date && cls.time === time);
-  };
-
-  // Generate classes from schedule
-  const generateMonthlyClasses = async (student) => {
-    const studentSchedules = schedules[student] || [];
-    if (studentSchedules.length === 0) {
-      const studentName = students.find(s => s.key === student)?.name;
-      Alert.alert('Error', `No schedules set for ${studentName}`);
-      return;
-    }
-
-    const [year, month] = currentMonth.split('-');
-    const startDate = new Date(parseInt(year), parseInt(month) - 1, 1);
-    const endDate = new Date(parseInt(year), parseInt(month), 0);
-    
-    let generatedCount = 0;
-    const dayMap = {
-      'sunday': 0, 'monday': 1, 'tuesday': 2, 'wednesday': 3,
-      'thursday': 4, 'friday': 5, 'saturday': 6
-    };
-    
-    const newClasses = [];
-    
-    for (let date = new Date(startDate); date <= endDate; date.setDate(date.getDate() + 1)) {
-      const dayOfWeek = date.getDay();
-      
-      studentSchedules.forEach(schedule => {
-        if (dayMap[schedule.day] === dayOfWeek) {
-          const dateString = formatDate(date);
-          
-          if (!classExists(student, dateString, schedule.time)) {
-            newClasses.push({
-              id: Date.now() + Math.random(),
-              date: dateString,
-              time: schedule.time,
-              timestamp: new Date().toISOString()
-            });
-            generatedCount++;
-          }
-        }
-      });
-    }
-
-    if (newClasses.length > 0) {
-      const updatedClasses = {
-        ...classes,
-        [student]: [...(classes[student] || []), ...newClasses]
-      };
-      setClasses(updatedClasses);
-      await saveToDatabase('student-classes', updatedClasses);
-    }
-
-    const studentName = students.find(s => s.key === student)?.name;
-    const monthName = getMonthName(currentMonth);
-    Alert.alert('Success', `Generated ${generatedCount} classes for ${studentName} in ${monthName}`);
+    Alert.alert('Success', 'Class added successfully!');
   };
 
   // Report generation
   const generateReport = async (type) => {
-    let reportText = '';
-    let filename = '';
-    const monthName = getMonthName(currentMonth).replace(' ', '_');
-
+    const monthName = getMonthName(currentMonth);
+    let reportText = `Student Class Management Report\n${monthName}\n\n`;
+    
     if (type === 'combined') {
-      reportText = generateCombinedReportText();
-      filename = `Combined_Report_${monthName}.txt`;
+      reportText += 'Combined Report\n';
+      reportText += `Kareem: ${getMonthlyClasses('kareem', currentMonth).length} classes\n`;
+      reportText += `Sara_Hana: ${getMonthlyClasses('saraHana', currentMonth).length} classes\n`;
     } else {
-      reportText = generateReportText(type);
-      const studentName = students.find(s => s.key === type)?.name;
-      filename = `${studentName}_Report_${monthName}.txt`;
+      const student = students.find(s => s.key === type);
+      const monthlyClasses = getMonthlyClasses(type, currentMonth);
+      const studentPrice = parseFloat(prices[type]) || 0;
+      const total = monthlyClasses.length * studentPrice;
+      
+      reportText += `${student?.name} Report\n`;
+      reportText += `Total Classes: ${monthlyClasses.length}\n`;
+      reportText += `Price per Class: $${studentPrice.toFixed(2)}\n`;
+      reportText += `Total Amount: $${total.toFixed(2)}\n`;
     }
 
     try {
-      const path = `${RNFS.DownloadDirectoryPath}/${filename}`;
-      await RNFS.writeFile(path, reportText, 'utf8');
-      
-      const shareOptions = {
-        title: 'Share Report',
-        message: `${filename} report`,
-        url: `file://${path}`,
-        type: 'text/plain',
-      };
-      
-      await Share.open(shareOptions);
+      await Share.share({
+        message: reportText,
+        title: `${monthName} Report`,
+      });
     } catch (error) {
-      console.error('Report generation error:', error);
-      Alert.alert('Error', 'Failed to generate report');
+      console.error('Share error:', error);
+      Alert.alert('Error', 'Failed to share report');
     }
   };
 
-  const generateReportText = (student) => {
-    const monthlyClasses = getMonthlyClasses(student, currentMonth);
-    const studentPrice = parseFloat(prices[student]) || 0;
-    const total = monthlyClasses.length * studentPrice;
-    const studentName = students.find(s => s.key === student)?.name;
+  const downloadReport = async (type) => {
     const monthName = getMonthName(currentMonth);
+    let reportContent = `Student Class Management Report\n${monthName}\n${'='.repeat(50)}\n\n`;
+    let fileName = '';
     
-    let report = `${studentName} - Monthly Report\n`;
-    report += `Month: ${monthName}\n`;
-    report += `${'='.repeat(40)}\n\n`;
-    report += `Summary:\n`;
-    report += `- Total Classes: ${monthlyClasses.length}\n`;
-    report += `- Price per Class: $${studentPrice.toFixed(2)}\n`;
-    report += `- Total Amount: $${total.toFixed(2)}\n\n`;
-    
-    if (monthlyClasses.length > 0) {
-      report += `Class Details:\n`;
-      report += `${'='.repeat(20)}\n`;
+    if (type === 'combined') {
+      const kareemClasses = getMonthlyClasses('kareem', currentMonth);
+      const saraHanaClasses = getMonthlyClasses('saraHana', currentMonth);
+      const kareemPrice = parseFloat(prices.kareem) || 0;
+      const saraHanaPrice = parseFloat(prices.saraHana) || 0;
+      const kareemTotal = kareemClasses.length * kareemPrice;
+      const saraHanaTotal = saraHanaClasses.length * saraHanaPrice;
+      const grandTotal = kareemTotal + saraHanaTotal;
       
-      monthlyClasses.forEach((cls, index) => {
-        report += `${index + 1}. Date: ${cls.date} at ${cls.time}\n`;
-      });
+      fileName = `Combined_Report_${monthName.replace(' ', '_')}.txt`;
+      reportContent += `COMBINED MONTHLY REPORT\n\n`;
+      reportContent += `Kareem:\n`;
+      reportContent += `  Classes: ${kareemClasses.length}\n`;
+      reportContent += `  Price per Class: $${kareemPrice.toFixed(2)}\n`;
+      reportContent += `  Total: $${kareemTotal.toFixed(2)}\n\n`;
+      reportContent += `Sara_Hana:\n`;
+      reportContent += `  Classes: ${saraHanaClasses.length}\n`;
+      reportContent += `  Price per Class: $${saraHanaPrice.toFixed(2)}\n`;
+      reportContent += `  Total: $${saraHanaTotal.toFixed(2)}\n\n`;
+      reportContent += `${'='.repeat(30)}\n`;
+      reportContent += `GRAND TOTAL: $${grandTotal.toFixed(2)}\n`;
+    } else {
+      const student = students.find(s => s.key === type);
+      const monthlyClasses = getMonthlyClasses(type, currentMonth);
+      const studentPrice = parseFloat(prices[type]) || 0;
+      const total = monthlyClasses.length * studentPrice;
+      
+      fileName = `${student?.name}_Report_${monthName.replace(' ', '_')}.txt`;
+      reportContent += `${student?.name.toUpperCase()} REPORT\n\n`;
+      reportContent += `Total Classes: ${monthlyClasses.length}\n`;
+      reportContent += `Price per Class: $${studentPrice.toFixed(2)}\n`;
+      reportContent += `Total Amount: $${total.toFixed(2)}\n\n`;
+      
+      if (monthlyClasses.length > 0) {
+        reportContent += `CLASS DETAILS:\n`;
+        reportContent += `${'='.repeat(30)}\n`;
+        monthlyClasses.forEach((cls, index) => {
+          reportContent += `${index + 1}. ${cls.date} at ${cls.time}\n`;
+        });
+      }
     }
     
-    report += `\n${'='.repeat(40)}\n`;
-    report += `Report generated on: ${new Date().toLocaleString()}\n`;
-    
-    return report;
-  };
+    reportContent += `\n\nGenerated on: ${new Date().toLocaleString()}\n`;
+    reportContent += `Student Class Management App v1.0\n`;
 
-  const generateCombinedReportText = () => {
-    const monthName = getMonthName(currentMonth);
-    const kareemClasses = getMonthlyClasses('kareem', currentMonth);
-    const saraHanaClasses = getMonthlyClasses('saraHana', currentMonth);
-    const kareemTotal = kareemClasses.length * (parseFloat(prices.kareem) || 0);
-    const saraHanaTotal = saraHanaClasses.length * (parseFloat(prices.saraHana) || 0);
-    const grandTotal = kareemTotal + saraHanaTotal;
-    
-    let report = `Combined Monthly Report\n`;
-    report += `Month: ${monthName}\n`;
-    report += `${'='.repeat(50)}\n\n`;
-    
-    // Kareem section
-    report += `KAREEM\n`;
-    report += `${'='.repeat(20)}\n`;
-    report += `Total Classes: ${kareemClasses.length}\n`;
-    report += `Price per Class: $${(parseFloat(prices.kareem) || 0).toFixed(2)}\n`;
-    report += `Total Amount: $${kareemTotal.toFixed(2)}\n\n`;
-    
-    if (kareemClasses.length > 0) {
-      report += `Classes:\n`;
-      kareemClasses.forEach((cls, index) => {
-        report += `${index + 1}. ${cls.date} at ${cls.time}\n`;
-      });
-      report += '\n';
+    try {
+      // Create a data URI with the report content
+      const dataUri = `data:text/plain;charset=utf-8,${encodeURIComponent(reportContent)}`;
+      
+      // Create a temporary link and trigger download
+      const link = document.createElement('a');
+      link.href = dataUri;
+      link.download = fileName;
+      
+      // For mobile devices, we'll use the Share API with the content
+      if (Platform.OS === 'android' || Platform.OS === 'ios') {
+        await Share.share({
+          message: reportContent,
+          title: `Download ${fileName}`,
+        });
+        Alert.alert('Report Ready', `${fileName} is ready to save. Use the share options to save to your device.`);
+      } else {
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        Alert.alert('Success', `${fileName} has been downloaded!`);
+      }
+    } catch (error) {
+      console.error('Download error:', error);
+      Alert.alert('Error', 'Failed to download report');
     }
-    
-    // Sara_Hana section
-    report += `SARA_HANA\n`;
-    report += `${'='.repeat(20)}\n`;
-    report += `Total Classes: ${saraHanaClasses.length}\n`;
-    report += `Price per Class: $${(parseFloat(prices.saraHana) || 0).toFixed(2)}\n`;
-    report += `Total Amount: $${saraHanaTotal.toFixed(2)}\n\n`;
-    
-    if (saraHanaClasses.length > 0) {
-      report += `Classes:\n`;
-      saraHanaClasses.forEach((cls, index) => {
-        report += `${index + 1}. ${cls.date} at ${cls.time}\n`;
-      });
-      report += '\n';
-    }
-    
-    // Summary
-    report += `SUMMARY\n`;
-    report += `${'='.repeat(20)}\n`;
-    report += `Total Classes (Both Students): ${kareemClasses.length + saraHanaClasses.length}\n`;
-    report += `Grand Total Revenue: $${grandTotal.toFixed(2)}\n\n`;
-    
-    report += `${'='.repeat(50)}\n`;
-    report += `Report generated on: ${new Date().toLocaleString()}\n`;
-    
-    return report;
   };
 
   // Helper functions
@@ -446,12 +608,34 @@ const App = () => {
     if (!classes[student]) return [];
     
     return classes[student]
-      .filter(cls => cls.date.startsWith(month))
+      .filter((cls) => cls.date.startsWith(month))
       .sort((a, b) => {
         const dateA = new Date(a.date + 'T' + a.time);
         const dateB = new Date(b.date + 'T' + b.time);
-        return dateB - dateA; // Most recent first
+        return dateB.getTime() - dateA.getTime();
       });
+  };
+
+  const getAvailableMonths = () => {
+    const months = new Set();
+    
+    // Add current month and next 11 months (12 months total)
+    const now = new Date();
+    for (let i = 0; i < 12; i++) {
+      const date = new Date(now.getFullYear(), now.getMonth() + i, 1);
+      const monthString = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+      months.add(monthString);
+    }
+    
+    // Add months from existing classes
+    Object.values(classes).forEach(studentClasses => {
+      studentClasses.forEach(cls => {
+        const monthString = cls.date.substring(0, 7); // YYYY-MM format
+        months.add(monthString);
+      });
+    });
+    
+    return Array.from(months).sort((a, b) => a.localeCompare(b)); // Chronological order (current first)
   };
 
   const getStudentStats = (student, month) => {
@@ -470,15 +654,6 @@ const App = () => {
     const updatedPrices = { ...prices, [student]: value };
     setPrices(updatedPrices);
     await saveToDatabase('student-prices', updatedPrices);
-  };
-
-  const onMonthChange = (event, selectedDate) => {
-    setMonthPickerVisible(false);
-    if (selectedDate) {
-      const monthString = `${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, '0')}`;
-      setCurrentMonth(monthString);
-      setMonthPickerDate(selectedDate);
-    }
   };
 
   // Calculate totals
@@ -503,10 +678,6 @@ const App = () => {
       
       <Appbar.Header>
         <Appbar.Content title="Student Class Management" />
-        <Appbar.Action 
-          icon="database" 
-          onPress={() => {}} 
-        />
       </Appbar.Header>
 
       <ScrollView style={styles.container}>
@@ -527,29 +698,49 @@ const App = () => {
         <Card style={styles.card}>
           <Card.Title title="Monthly Overview" />
           <Card.Content>
-            <Button 
-              mode="outlined" 
-              onPress={() => setMonthPickerVisible(true)}
-              style={styles.monthSelector}
-            >
-              Select Month: {getMonthName(currentMonth)}
-            </Button>
+            <View style={styles.monthNavigationContainer}>
+              <Button 
+                mode="contained" 
+                onPress={() => navigateMonth(-1)}
+                style={styles.navButton}
+                compact
+              >
+                {"< Prev"}
+              </Button>
+              
+              <Text variant="headlineMedium" style={styles.currentMonthDisplay}>
+                {getMonthName(currentMonth)}
+              </Text>
+              
+              <Button 
+                mode="contained" 
+                onPress={() => navigateMonth(1)}
+                style={styles.navButton}
+                compact
+              >
+                Next >
+              </Button>
+            </View>
             
-            <Text variant="headlineLarge" style={styles.currentMonth}>
-              {getMonthName(currentMonth)}
-            </Text>
+            <Button 
+              mode="text" 
+              onPress={setCurrentMonthToNow}
+              style={styles.currentMonthButton}
+            >
+              Go to Current Month
+            </Button>
             
             <View style={styles.statsContainer}>
               <Surface style={[styles.studentCard, { backgroundColor: '#EBF8FF' }]}>
                 <Text variant="headlineSmall" style={{ color: '#1E40AF' }}>Kareem</Text>
-                <Text>Classes this month: {kareemStats.classCount}</Text>
-                <Text style={{ color: '#10B981' }}>Monthly total: ${kareemStats.total.toFixed(2)}</Text>
+                <Text>Classes: {kareemStats.classCount}</Text>
+                <Text style={{ color: '#10B981' }}>Total: ${kareemStats.total.toFixed(2)}</Text>
               </Surface>
               
               <Surface style={[styles.studentCard, { backgroundColor: '#FDF2F8' }]}>
                 <Text variant="headlineSmall" style={{ color: '#BE185D' }}>Sara_Hana</Text>
-                <Text>Classes this month: {saraHanaStats.classCount}</Text>
-                <Text style={{ color: '#10B981' }}>Monthly total: ${saraHanaStats.total.toFixed(2)}</Text>
+                <Text>Classes: {saraHanaStats.classCount}</Text>
+                <Text style={{ color: '#10B981' }}>Total: ${saraHanaStats.total.toFixed(2)}</Text>
               </Surface>
             </View>
             
@@ -574,23 +765,16 @@ const App = () => {
               titleStyle={{ color: student.color }}
             />
             <Card.Content>
-              <Text>Classes this month: {getStudentStats(student.key, currentMonth).classCount}</Text>
-              <View style={styles.classesPreview}>
-                {getMonthlyClasses(student.key, currentMonth).slice(0, 3).map(cls => (
-                  <Chip 
-                    key={cls.id} 
-                    style={styles.classChip}
-                    textStyle={styles.classChipText}
-                  >
-                    {formatDisplayDate(cls.date, cls.time)}
-                  </Chip>
-                ))}
-                {getMonthlyClasses(student.key, currentMonth).length > 3 && (
-                  <Text style={styles.moreClasses}>
-                    +{getMonthlyClasses(student.key, currentMonth).length - 3} more
-                  </Text>
-                )}
+              <Text style={styles.tapToView}>Tap to view all classes</Text>
+              <View style={styles.classStatsRow}>
+                <Text>Classes: {getStudentStats(student.key, currentMonth).classCount}</Text>
+                <Text style={styles.totalAmount}>Total: ${getStudentStats(student.key, currentMonth).total.toFixed(2)}</Text>
               </View>
+              <Text style={styles.noClassesText}>
+                {getStudentStats(student.key, currentMonth).classCount === 0 
+                  ? 'No classes scheduled this month' 
+                  : `${getStudentStats(student.key, currentMonth).classCount} classes this month`}
+              </Text>
             </Card.Content>
           </Card>
         ))}
@@ -610,7 +794,7 @@ const App = () => {
               <Button 
                 mode="contained" 
                 onPress={() => setScheduleModalVisible(true)}
-                style={[styles.actionButton, { backgroundColor: '#8B5CF6' }]}
+                style={[styles.actionButton, { backgroundColor: '#A855F7' }]}
               >
                 Add Schedule
               </Button>
@@ -628,38 +812,38 @@ const App = () => {
               >
                 Reports
               </Button>
+              <Button 
+                mode="outlined" 
+                onPress={debugSchedules}
+                style={[styles.actionButton, { backgroundColor: '#EF4444' }]}
+              >
+                Debug
+              </Button>
             </View>
           </Card.Content>
         </Card>
 
-        {/* Generate Classes */}
+        {/* Generate Monthly Classes */}
         <Card style={styles.card}>
           <Card.Title title="Generate Monthly Classes" />
           <Card.Content>
-            <View style={styles.generateContainer}>
+            {students.map(student => (
               <Button 
+                key={student.key}
                 mode="contained" 
-                onPress={() => generateMonthlyClasses('kareem')}
-                style={[styles.generateButton, { backgroundColor: '#3B82F6' }]}
+                onPress={() => generateClassesForStudent(student.key)}
+                style={[styles.generateButton, { backgroundColor: student.color }]}
+                disabled={!schedules[student.key] || schedules[student.key].length === 0}
               >
-                Generate Classes for Kareem
+                Generate Classes for {student.name}
               </Button>
-              <Button 
-                mode="contained" 
-                onPress={() => generateMonthlyClasses('saraHana')}
-                style={[styles.generateButton, { backgroundColor: '#EC4899' }]}
-              >
-                Generate Classes for Sara_Hana
-              </Button>
-            </View>
+            ))}
           </Card.Content>
         </Card>
 
         <View style={styles.bottomPadding} />
       </ScrollView>
 
-      {/* Modals */}
-      
       {/* Price Setting Modal */}
       <Portal>
         <Modal 
@@ -674,7 +858,6 @@ const App = () => {
             value={prices.kareem}
             onChangeText={(text) => updatePrice('kareem', text)}
             keyboardType="numeric"
-            left={<TextInput.Icon icon="currency-usd" />}
             style={styles.priceInput}
           />
           
@@ -683,7 +866,6 @@ const App = () => {
             value={prices.saraHana}
             onChangeText={(text) => updatePrice('saraHana', text)}
             keyboardType="numeric"
-            left={<TextInput.Icon icon="currency-usd" />}
             style={styles.priceInput}
           />
           
@@ -694,6 +876,99 @@ const App = () => {
           >
             Done
           </Button>
+        </Modal>
+      </Portal>
+
+      {/* Add Class Modal */}
+      <Portal>
+        <Modal 
+          visible={classModalVisible} 
+          onDismiss={() => setClassModalVisible(false)}
+          contentContainerStyle={styles.modal}
+        >
+          <Text variant="headlineSmall" style={styles.modalTitle}>Add Class</Text>
+          
+          <Text style={styles.modalLabel}>Select Student:</Text>
+          <View style={styles.studentSelector}>
+            {students.map(student => (
+              <Chip
+                key={student.key}
+                selected={selectedStudent === student.key}
+                onPress={() => setSelectedStudent(student.key)}
+                style={styles.studentChip}
+              >
+                {student.name}
+              </Chip>
+            ))}
+          </View>
+          
+          <Button
+            mode="outlined"
+            onPress={() => setShowDatePicker(true)}
+            style={styles.dateButton}
+          >
+            Date: {formatDate(newClassDate)}
+          </Button>
+          
+          {showDatePicker && (
+            <DateTimePicker
+              value={newClassDate}
+              mode="date"
+              display="default"
+              onChange={onDateChange}
+            />
+          )}
+          
+          <Text style={styles.modalLabel}>Select Time: {getFormattedTime()}</Text>
+          
+          <Text style={styles.timeSubLabel}>Hour:</Text>
+          <ScrollView style={styles.timeScrollView} horizontal showsHorizontalScrollIndicator={false}>
+            <View style={styles.hourSelector}>
+              {hours.map(hour => (
+                <Chip
+                  key={hour}
+                  selected={selectedHour === hour}
+                  onPress={() => setSelectedHour(hour)}
+                  style={styles.timeChip}
+                >
+                  {String(hour).padStart(2, '0')}
+                </Chip>
+              ))}
+            </View>
+          </ScrollView>
+          
+          <Text style={styles.timeSubLabel}>Minute:</Text>
+          <ScrollView style={styles.timeScrollView} horizontal showsHorizontalScrollIndicator={false}>
+            <View style={styles.minuteSelector}>
+              {minutes.map(minute => (
+                <Chip
+                  key={minute}
+                  selected={selectedMinute === minute}
+                  onPress={() => setSelectedMinute(minute)}
+                  style={styles.timeChip}
+                >
+                  {String(minute).padStart(2, '0')}
+                </Chip>
+              ))}
+            </View>
+          </ScrollView>
+          
+          <View style={styles.modalButtons}>
+            <Button 
+              mode="outlined" 
+              onPress={() => setClassModalVisible(false)}
+              style={styles.modalButtonHalf}
+            >
+              Cancel
+            </Button>
+            <Button 
+              mode="contained" 
+              onPress={addClass}
+              style={styles.modalButtonHalf}
+            >
+              Add Class
+            </Button>
+          </View>
         </Modal>
       </Portal>
 
@@ -722,38 +997,115 @@ const App = () => {
           
           <Text style={styles.modalLabel}>Select Day:</Text>
           <View style={styles.daySelector}>
-            {weekDays.map(day => (
+            {daysOfWeek.map(day => (
               <Chip
                 key={day}
-                selected={newScheduleDay === day}
-                onPress={() => setNewScheduleDay(day)}
+                selected={selectedDay === day}
+                onPress={() => setSelectedDay(day)}
                 style={styles.dayChip}
               >
-                {day.charAt(0).toUpperCase() + day.slice(1)}
+                {day}
               </Chip>
             ))}
           </View>
           
-          <Button
-            mode="outlined"
-            onPress={() => {
-              // Time picker will be handled by DateTimePicker
-            }}
-            style={styles.timeButton}
-          >
-            Time: {newScheduleTime.toTimeString().substring(0, 5)}
-          </Button>
+          <Text style={styles.modalLabel}>Select Time: {getFormattedScheduleTime()}</Text>
           
-          <View style={styles.modalButtons}>
+          <View style={styles.timeInputModeContainer}>
             <Button 
-              mode="outlined" 
+              mode={scheduleTimeInputMode === 'selector' ? 'contained' : 'outlined'}
+              onPress={() => setScheduleTimeInputMode('selector')}
+              style={styles.timeInputModeButton}
+              compact
+            >
+              Selector
+            </Button>
+            <Button 
+              mode={scheduleTimeInputMode === 'input' ? 'contained' : 'outlined'}
+              onPress={() => setScheduleTimeInputMode('input')}
+              style={styles.timeInputModeButton}
+              compact
+            >
+              Manual Input
+            </Button>
+          </View>
+
+          {scheduleTimeInputMode === 'input' ? (
+            <View style={styles.timeInputContainer}>
+              <TextInput
+                label="Time (HH:MM)"
+                value={scheduleTimeInputText}
+                onChangeText={(text) => handleTimeInputChange(text, true)}
+                placeholder="10:00"
+                keyboardType="numeric"
+                style={styles.timeInput}
+                mode="outlined"
+              />
+              <Text style={styles.timeInputHint}>Format: HH:MM (24-hour)</Text>
+            </View>
+          ) : (
+            <View>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.timeScrollView}>
+                <Text style={styles.timeSubLabel}>Hour:</Text>
+                <View style={styles.hourSelector}>
+                  {hours.map(hour => (
+                    <Chip
+                      key={hour}
+                      selected={selectedScheduleHour === hour}
+                      onPress={() => {
+                        setSelectedScheduleHour(hour);
+                        setScheduleTimeInputText(getFormattedScheduleTime());
+                      }}
+                      style={styles.timeChip}
+                    >
+                      {String(hour).padStart(2, '0')}
+                    </Chip>
+                  ))}
+                </View>
+              </ScrollView>
+              
+              <View style={styles.minuteSelectorContainer}>
+                <View style={styles.minuteModeToggle}>
+                  <Text style={styles.timeSubLabel}>Minutes:</Text>
+                  <Button
+                    mode="text"
+                    onPress={() => setShowQuickMinutes(!showQuickMinutes)}
+                    compact
+                  >
+                    {showQuickMinutes ? 'Show All' : 'Quick Select'}
+                  </Button>
+                </View>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.timeScrollView}>
+                  <View style={styles.minuteSelector}>
+                    {(showQuickMinutes ? quickMinutes : minutes).map(minute => (
+                      <Chip
+                        key={minute}
+                        selected={selectedScheduleMinute === minute}
+                        onPress={() => {
+                          setSelectedScheduleMinute(minute);
+                          setScheduleTimeInputText(getFormattedScheduleTime());
+                        }}
+                        style={styles.timeChip}
+                      >
+                        {String(minute).padStart(2, '0')}
+                      </Chip>
+                    ))}
+                  </View>
+                </ScrollView>
+              </View>
+            </View>
+          )}
+
+          <View style={styles.modalButtons}>
+            <Button
+              mode="outlined"
               onPress={() => setScheduleModalVisible(false)}
               style={styles.modalButtonHalf}
             >
               Cancel
             </Button>
-            <Button 
-              mode="contained" 
+            <Button
+              mode="contained"
               onPress={addSchedule}
               style={styles.modalButtonHalf}
             >
@@ -762,83 +1114,18 @@ const App = () => {
           </View>
           
           {/* Show existing schedules */}
-          <Text variant="titleMedium" style={styles.existingSchedulesTitle}>
+          <Text style={styles.modalLabel}>
             Existing Schedules for {students.find(s => s.key === selectedStudent)?.name}:
           </Text>
-          {(schedules[selectedStudent] || []).map(schedule => (
-            <View key={schedule.id} style={styles.scheduleItem}>
-              <Text>{schedule.day.charAt(0).toUpperCase() + schedule.day.slice(1)} at {schedule.time}</Text>
-              <Button
-                mode="text"
-                textColor="#EF4444"
-                onPress={() => removeSchedule(selectedStudent, schedule.id)}
-              >
-                Remove
-              </Button>
-            </View>
-          ))}
-        </Modal>
-      </Portal>
-
-      {/* Add Class Modal */}
-      <Portal>
-        <Modal 
-          visible={classModalVisible} 
-          onDismiss={() => setClassModalVisible(false)}
-          contentContainerStyle={styles.modal}
-        >
-          <Text variant="headlineSmall" style={styles.modalTitle}>Add Extra Class</Text>
-          
-          <Text style={styles.modalLabel}>Select Student:</Text>
-          <View style={styles.studentSelector}>
-            {students.map(student => (
-              <Chip
-                key={student.key}
-                selected={selectedStudent === student.key}
-                onPress={() => setSelectedStudent(student.key)}
-                style={styles.studentChip}
-              >
-                {student.name}
-              </Chip>
-            ))}
-          </View>
-          
-          <Button
-            mode="outlined"
-            onPress={() => {
-              // Date picker will be handled by DateTimePicker
-            }}
-            style={styles.dateButton}
-          >
-            Date: {formatDate(newClassDate)}
-          </Button>
-          
-          <Button
-            mode="outlined"
-            onPress={() => {
-              // Time picker will be handled by DateTimePicker
-            }}
-            style={styles.timeButton}
-          >
-            Time: {newClassTime.toTimeString().substring(0, 5)}
-          </Button>
-          
-          <View style={styles.modalButtons}>
-            <Button 
-              mode="outlined" 
-              onPress={() => setClassModalVisible(false)}
-              style={styles.modalButtonHalf}
-            >
-              Cancel
-            </Button>
-            <Button 
-              mode="contained" 
-              onPress={addClass}
-              style={styles.modalButtonHalf}
-            >
-              Add Class
-            </Button>
-          </View>
+          {(schedules[selectedStudent] || []).length > 0 ? (
+            (schedules[selectedStudent] || []).map(schedule => (
+              <Surface key={schedule.id} style={styles.scheduleCard}>
+                <Text>{schedule.day} at {schedule.time}</Text>
+              </Surface>
+            ))
+          ) : (
+            <Text style={styles.noScheduleText}>No schedules yet</Text>
+          )}
         </Modal>
       </Portal>
 
@@ -872,7 +1159,15 @@ const App = () => {
                   onPress={() => generateReport(student.key)}
                   style={styles.reportButton}
                 >
-                  Download {student.name}'s Report
+                  Share {student.name}'s Report
+                </Button>
+                <Button
+                  mode="contained"
+                  onPress={() => downloadReport(student.key)}
+                  style={[styles.reportButton, styles.downloadButton]}
+                  icon="download"
+                >
+                  Download Report
                 </Button>
               </Surface>
             );
@@ -888,6 +1183,14 @@ const App = () => {
               onPress={() => generateReport('combined')}
               style={styles.reportButton}
             >
+              Share Combined Report
+            </Button>
+            <Button
+              mode="contained"
+              onPress={() => downloadReport('combined')}
+              style={[styles.reportButton, styles.downloadButton]}
+              icon="download"
+            >
               Download Combined Report
             </Button>
           </Surface>
@@ -901,25 +1204,6 @@ const App = () => {
           </Button>
         </Modal>
       </Portal>
-
-      {/* Date/Time Pickers */}
-      {monthPickerVisible && (
-        <DateTimePicker
-          value={monthPickerDate}
-          mode="date"
-          display="default"
-          onChange={onMonthChange}
-        />
-      )}
-
-      {/* Class Details FAB */}
-      <FAB
-        style={styles.fab}
-        icon="calendar-multiple"
-        onPress={() => {
-          // Show class details - you could implement another modal here
-        }}
-      />
     </PaperProvider>
   );
 };
@@ -950,14 +1234,48 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     elevation: 4,
   },
-  monthSelector: {
+  monthNavigationContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     marginBottom: 16,
   },
-  currentMonth: {
+  navButton: {
+    minWidth: 80,
+  },
+  currentMonthDisplay: {
     textAlign: 'center',
     color: '#3B82F6',
     fontWeight: 'bold',
+    flex: 1,
+  },
+  currentMonthButton: {
+    alignSelf: 'center',
     marginBottom: 16,
+  },
+  tapToView: {
+    color: '#6B7280',
+    fontSize: 14,
+    marginBottom: 8,
+  },
+  classStatsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
+  totalAmount: {
+    color: '#10B981',
+    fontWeight: 'bold',
+  },
+  noClassesText: {
+    color: '#6B7280',
+    fontStyle: 'italic',
+    textAlign: 'center',
+    marginTop: 8,
+  },
+  generateButton: {
+    marginVertical: 4,
+    marginHorizontal: 0,
   },
   statsContainer: {
     flexDirection: 'row',
@@ -1006,12 +1324,6 @@ const styles = StyleSheet.create({
     width: '48%',
     marginVertical: 4,
   },
-  generateContainer: {
-    gap: 12,
-  },
-  generateButton: {
-    marginVertical: 4,
-  },
   modal: {
     backgroundColor: 'white',
     padding: 20,
@@ -1040,17 +1352,6 @@ const styles = StyleSheet.create({
   studentChip: {
     margin: 4,
   },
-  daySelector: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    marginBottom: 16,
-  },
-  dayChip: {
-    margin: 4,
-  },
-  timeButton: {
-    marginVertical: 8,
-  },
   dateButton: {
     marginVertical: 8,
   },
@@ -1064,18 +1365,6 @@ const styles = StyleSheet.create({
   },
   modalButtonHalf: {
     width: '48%',
-  },
-  existingSchedulesTitle: {
-    marginTop: 16,
-    marginBottom: 8,
-  },
-  scheduleItem: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 8,
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
   },
   reportMonth: {
     textAlign: 'center',
@@ -1091,16 +1380,130 @@ const styles = StyleSheet.create({
   reportButton: {
     marginTop: 8,
   },
-  fab: {
-    position: 'absolute',
-    margin: 16,
-    right: 0,
-    bottom: 0,
-    backgroundColor: '#3B82F6',
+  sectionTitle: {
+    textAlign: 'center',
+    marginBottom: 16,
+    color: '#3B82F6',
+  },
+  scheduleCard: {
+    padding: 12,
+    marginVertical: 8,
+    borderRadius: 8,
+    elevation: 2,
+  },
+  schedulesContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginTop: 8,
+  },
+  scheduleChip: {
+    margin: 4,
+  },
+  noScheduleText: {
+    fontStyle: 'italic',
+    color: '#6B7280',
+    marginTop: 4,
+  },
+  scheduleActionsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 16,
+  },
+  scheduleActionButton: {
+    width: '48%',
+  },
+  daySelector: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginBottom: 16,
+  },
+  dayChip: {
+    margin: 2,
+  },
+  timeSelector: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginBottom: 16,
+  },
+  timeScrollView: {
+    maxHeight: 120,
+    marginBottom: 16,
+  },
+  hourSelector: {
+    flexDirection: 'row',
+    paddingHorizontal: 8,
+  },
+  minuteSelector: {
+    flexDirection: 'row',
+    paddingHorizontal: 8,
+  },
+  timeSubLabel: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    marginBottom: 8,
+    color: '#374151',
+  },
+  timeChip: {
+    margin: 2,
+    minWidth: 50,
+  },
+  monthsList: {
+    maxHeight: 300,
+    marginBottom: 16,
+  },
+  monthItem: {
+    marginVertical: 4,
+    borderRadius: 8,
+    elevation: 1,
+  },
+  selectedMonthItem: {
+    backgroundColor: '#EBF8FF',
+    elevation: 3,
+  },
+  monthButton: {
+    width: '100%',
+    justifyContent: 'flex-start',
+  },
+  monthButtonText: {
+    fontSize: 16,
+    textAlign: 'left',
+  },
+  selectedMonthButtonText: {
+    color: '#1E40AF',
+    fontWeight: 'bold',
   },
   bottomPadding: {
     height: 100,
   },
+  timeInputModeContainer: {
+    flexDirection: 'row',
+    marginBottom: 16,
+    justifyContent: 'center',
+  },
+  timeInputModeButton: {
+    marginHorizontal: 8,
+    minWidth: 100,
+  },
+  timeInputContainer: {
+    marginBottom: 16,
+  },
+  timeInput: {
+    marginBottom: 8,
+  },
+  timeInputHint: {
+    fontSize: 12,
+    color: '#6B7280',
+    fontStyle: 'italic',
+  },
+  minuteSelectorContainer: {
+    marginTop: 8,
+  },
+  minuteModeToggle: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
 });
 
-export default App;
+export default StudentClassManagementApp;
