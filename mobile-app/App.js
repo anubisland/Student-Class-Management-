@@ -292,16 +292,58 @@ const StudentClassManagementApp = () => {
       });
   };
 
-  const debugSchedules = () => {
-    console.log('=== DEBUG SCHEDULES ===');
-    console.log('Current schedules state:', schedules);
-    AsyncStorage.getItem('student-schedules')
-      .then(data => {
-        console.log('Schedules in AsyncStorage:', data ? JSON.parse(data) : 'null');
-      })
-      .catch(error => {
-        console.error('Error reading from AsyncStorage:', error);
-      });
+  // Remove a schedule
+  const removeSchedule = async (studentKey, scheduleId) => {
+    const studentName = students.find(s => s.key === studentKey)?.name;
+
+    Alert.alert(
+      'Remove Schedule',
+      `Are you sure you want to remove this schedule for ${studentName}?`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Remove',
+          style: 'destructive',
+          onPress: async () => {
+            const updatedSchedules = { ...schedules };
+            updatedSchedules[studentKey] = (updatedSchedules[studentKey] || []).filter(
+              s => s.id !== scheduleId
+            );
+
+            setSchedules(updatedSchedules);
+            await saveToDatabase('student-schedules', updatedSchedules);
+            Alert.alert('Success', 'Schedule removed!');
+          }
+        }
+      ]
+    );
+  };
+
+  // Remove a class
+  const removeClass = async (studentKey, classId) => {
+    const studentName = students.find(s => s.key === studentKey)?.name;
+
+    Alert.alert(
+      'Delete Class',
+      `Are you sure you want to delete this class for ${studentName}?`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            const updatedClasses = { ...classes };
+            updatedClasses[studentKey] = (updatedClasses[studentKey] || []).filter(
+              c => c.id !== classId
+            );
+
+            setClasses(updatedClasses);
+            await saveToDatabase('student-classes', updatedClasses);
+            Alert.alert('Success', 'Class deleted!');
+          }
+        }
+      ]
+    );
   };
 
   const generateClassesForStudent = async (studentKey) => {
@@ -786,26 +828,50 @@ const StudentClassManagementApp = () => {
         </Card>
 
         {/* Student Classes Overview */}
-        {students.map(student => (
-          <Card key={student.key} style={styles.card}>
-            <Card.Title 
-              title={`${student.name}'s Classes`}
-              titleStyle={{ color: student.color }}
-            />
-            <Card.Content>
-              <Text style={styles.tapToView}>Tap to view all classes</Text>
-              <View style={styles.classStatsRow}>
-                <Text>Classes: {getStudentStats(student.key, currentMonth).classCount}</Text>
-                <Text style={styles.totalAmount}>Total: ${getStudentStats(student.key, currentMonth).total.toFixed(2)}</Text>
-              </View>
-              <Text style={styles.noClassesText}>
-                {getStudentStats(student.key, currentMonth).classCount === 0 
-                  ? 'No classes scheduled this month' 
-                  : `${getStudentStats(student.key, currentMonth).classCount} classes this month`}
-              </Text>
-            </Card.Content>
-          </Card>
-        ))}
+        {students.map(student => {
+          const studentClasses = getMonthlyClasses(student.key, currentMonth);
+          const stats = getStudentStats(student.key, currentMonth);
+          return (
+            <Card key={student.key} style={styles.card}>
+              <Card.Title
+                title={`${student.name}'s Classes`}
+                titleStyle={{ color: student.color }}
+              />
+              <Card.Content>
+                <View style={styles.classStatsRow}>
+                  <Text>Classes: {stats.classCount}</Text>
+                  <Text style={styles.totalAmount}>Total: ${stats.total.toFixed(2)}</Text>
+                </View>
+
+                {studentClasses.length > 0 ? (
+                  <View style={styles.classListContainer}>
+                    <Text style={styles.classListTitle}>Class Details:</Text>
+                    {studentClasses.map((cls, index) => (
+                      <Surface key={cls.id} style={styles.classItem}>
+                        <View style={styles.classItemRow}>
+                          <View style={styles.classItemInfo}>
+                            <Text style={styles.classItemDate}>{cls.date}</Text>
+                            <Text style={styles.classItemTime}>at {cls.time}</Text>
+                          </View>
+                          <Button
+                            mode="text"
+                            onPress={() => removeClass(student.key, cls.id)}
+                            textColor="#EF4444"
+                            compact
+                          >
+                            Delete
+                          </Button>
+                        </View>
+                      </Surface>
+                    ))}
+                  </View>
+                ) : (
+                  <Text style={styles.noClassesText}>No classes scheduled this month</Text>
+                )}
+              </Card.Content>
+            </Card>
+          );
+        })}
 
         {/* Quick Actions */}
         <Card style={styles.card}>
@@ -833,19 +899,12 @@ const StudentClassManagementApp = () => {
               >
                 Add Class
               </Button>
-              <Button 
-                mode="contained" 
+              <Button
+                mode="contained"
                 onPress={() => setReportModalVisible(true)}
                 style={[styles.actionButton, { backgroundColor: '#F59E0B' }]}
               >
                 Reports
-              </Button>
-              <Button 
-                mode="outlined" 
-                onPress={debugSchedules}
-                style={[styles.actionButton, { backgroundColor: '#EF4444' }]}
-              >
-                Debug
               </Button>
             </View>
           </Card.Content>
@@ -1154,7 +1213,17 @@ const StudentClassManagementApp = () => {
           {(schedules[selectedStudent] || []).length > 0 ? (
             (schedules[selectedStudent] || []).map(schedule => (
               <Surface key={schedule.id} style={styles.scheduleCard}>
-                <Text>{schedule.day} at {schedule.time}</Text>
+                <View style={styles.scheduleRow}>
+                  <Text style={styles.scheduleText}>{schedule.day} at {schedule.time}</Text>
+                  <Button
+                    mode="text"
+                    onPress={() => removeSchedule(selectedStudent, schedule.id)}
+                    textColor="#EF4444"
+                    compact
+                  >
+                    Remove
+                  </Button>
+                </View>
               </Surface>
             ))
           ) : (
@@ -1546,6 +1615,46 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 8,
+  },
+  scheduleRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  scheduleText: {
+    flex: 1,
+    fontSize: 14,
+  },
+  classListContainer: {
+    marginTop: 12,
+  },
+  classListTitle: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    marginBottom: 8,
+    color: '#374151',
+  },
+  classItem: {
+    padding: 10,
+    marginVertical: 4,
+    borderRadius: 8,
+    elevation: 1,
+  },
+  classItemRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  classItemInfo: {
+    flex: 1,
+  },
+  classItemDate: {
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  classItemTime: {
+    fontSize: 12,
+    color: '#6366F1',
   },
 });
 
