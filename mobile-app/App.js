@@ -6,9 +6,8 @@ import {
   StatusBar,
   Alert,
   Share,
-  PermissionsAndroid,
+  TouchableOpacity,
   Platform,
-  Linking,
 } from 'react-native';
 import {
   Provider as PaperProvider,
@@ -55,18 +54,11 @@ const StudentClassManagementApp = () => {
   const [selectedStudent, setSelectedStudent] = useState('kareem');
   const [newClassDate, setNewClassDate] = useState(new Date());
   const [selectedDay, setSelectedDay] = useState('Monday');
-  const [selectedTime, setSelectedTime] = useState('10:00');
-  const [selectedClassTime, setSelectedClassTime] = useState('10:00');
   const [selectedHour, setSelectedHour] = useState(10);
   const [selectedMinute, setSelectedMinute] = useState(0);
   const [selectedScheduleHour, setSelectedScheduleHour] = useState(10);
   const [selectedScheduleMinute, setSelectedScheduleMinute] = useState(0);
-  const [showDatePicker, setShowDatePicker] = useState(false);
-  const [timeInputMode, setTimeInputMode] = useState('selector'); // 'selector' or 'input'
-  const [scheduleTimeInputMode, setScheduleTimeInputMode] = useState('selector');
-  const [timeInputText, setTimeInputText] = useState('10:00');
-  const [scheduleTimeInputText, setScheduleTimeInputText] = useState('10:00');
-  const [showQuickMinutes, setShowQuickMinutes] = useState(true);
+  const [calendarViewDate, setCalendarViewDate] = useState(new Date());
 
   const students = [
     { key: 'kareem', name: 'Kareem', color: '#3B82F6' },
@@ -74,10 +66,7 @@ const StudentClassManagementApp = () => {
   ];
 
   const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-  const timeSlots = ['06:00', '07:00', '08:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00', '21:00', '22:00', '23:00'];
-  const hours = Array.from({length: 24}, (_, i) => i);
-  const minutes = Array.from({length: 60}, (_, i) => i);
-  const quickMinutes = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55];
+  const calendarDayLabels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
   // Initialize app
   useEffect(() => {
@@ -185,13 +174,6 @@ const StudentClassManagementApp = () => {
     setCurrentMonth(newMonthString);
   };
 
-  const onDateChange = (event, selectedDate) => {
-    setShowDatePicker(false);
-    if (selectedDate) {
-      setNewClassDate(selectedDate);
-    }
-  };
-
   const getFormattedTime = () => {
     const hourStr = String(selectedHour).padStart(2, '0');
     const minStr = String(selectedMinute).padStart(2, '0');
@@ -204,32 +186,64 @@ const StudentClassManagementApp = () => {
     return `${hourStr}:${minStr}`;
   };
 
-  // Handle time input changes for manual time entry
-  const handleTimeInputChange = (text, isSchedule = false) => {
-    // Allow only numbers and colon
-    const cleanedText = text.replace(/[^0-9:]/g, '');
+  // Calendar helper - get days grid for a month
+  const getCalendarDays = (year, month) => {
+    const firstDay = new Date(year, month, 1).getDay(); // 0=Sun
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const days = [];
 
-    if (isSchedule) {
-      setScheduleTimeInputText(cleanedText);
-    } else {
-      setTimeInputText(cleanedText);
+    // Add empty cells for days before the 1st
+    for (let i = 0; i < firstDay; i++) {
+      days.push(null);
     }
+    // Add day numbers
+    for (let d = 1; d <= daysInMonth; d++) {
+      days.push(d);
+    }
+    return days;
+  };
 
-    // Parse the time if it's in valid format (HH:MM)
-    const timeMatch = cleanedText.match(/^(\d{1,2}):(\d{2})$/);
-    if (timeMatch) {
-      const hours = parseInt(timeMatch[1], 10);
-      const mins = parseInt(timeMatch[2], 10);
+  // Navigate the calendar view month
+  const navigateCalendar = (direction) => {
+    const newDate = new Date(calendarViewDate);
+    newDate.setMonth(newDate.getMonth() + direction);
+    setCalendarViewDate(newDate);
+  };
 
-      if (hours >= 0 && hours <= 23 && mins >= 0 && mins <= 59) {
-        if (isSchedule) {
-          setSelectedScheduleHour(hours);
-          setSelectedScheduleMinute(mins);
-        } else {
-          setSelectedHour(hours);
-          setSelectedMinute(mins);
-        }
-      }
+  // Select a day from the calendar
+  const selectCalendarDay = (day) => {
+    const newDate = new Date(
+      calendarViewDate.getFullYear(),
+      calendarViewDate.getMonth(),
+      day
+    );
+    setNewClassDate(newDate);
+  };
+
+  // Time stepper helpers
+  const incrementHour = (current, delta, isSchedule = false) => {
+    const newHour = ((current + delta) % 24 + 24) % 24;
+    if (isSchedule) {
+      setSelectedScheduleHour(newHour);
+    } else {
+      setSelectedHour(newHour);
+    }
+  };
+
+  const incrementMinute = (current, delta, isSchedule = false) => {
+    const newMinute = ((current + delta) % 60 + 60) % 60;
+    if (isSchedule) {
+      setSelectedScheduleMinute(newMinute);
+    } else {
+      setSelectedMinute(newMinute);
+    }
+  };
+
+  const setQuickMinute = (minute, isSchedule = false) => {
+    if (isSchedule) {
+      setSelectedScheduleMinute(minute);
+    } else {
+      setSelectedMinute(minute);
     }
   };
 
@@ -646,30 +660,13 @@ const StudentClassManagementApp = () => {
     reportContent += `Student Class Management App v1.0\n`;
 
     try {
-      // Create a data URI with the report content
-      const dataUri = `data:text/plain;charset=utf-8,${encodeURIComponent(reportContent)}`;
-      
-      // Create a temporary link and trigger download
-      const link = document.createElement('a');
-      link.href = dataUri;
-      link.download = fileName;
-      
-      // For mobile devices, we'll use the Share API with the content
-      if (Platform.OS === 'android' || Platform.OS === 'ios') {
-        await Share.share({
-          message: reportContent,
-          title: `Download ${fileName}`,
-        });
-        Alert.alert('Report Ready', `${fileName} is ready to save. Use the share options to save to your device.`);
-      } else {
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        Alert.alert('Success', `${fileName} has been downloaded!`);
-      }
+      await Share.share({
+        message: reportContent,
+        title: fileName,
+      });
     } catch (error) {
       console.error('Download error:', error);
-      Alert.alert('Error', 'Failed to download report');
+      Alert.alert('Error', 'Failed to share report');
     }
   };
 
@@ -824,6 +821,42 @@ const StudentClassManagementApp = () => {
                 <Text variant="headlineSmall" style={{ color: '#10B981' }}>${totalRevenue.toFixed(2)}</Text>
               </View>
             </Surface>
+          </Card.Content>
+        </Card>
+
+        {/* Weekly Schedules - Always Visible */}
+        <Card style={styles.card}>
+          <Card.Title title="Weekly Schedules" />
+          <Card.Content>
+            {students.map(student => (
+              <View key={student.key} style={styles.scheduleStudentSection}>
+                <Text style={[styles.scheduleStudentName, { color: student.color }]}>
+                  {student.name}
+                </Text>
+                {(schedules[student.key] || []).length > 0 ? (
+                  (schedules[student.key] || []).map(schedule => (
+                    <Surface key={schedule.id} style={styles.scheduleCard}>
+                      <View style={styles.scheduleRow}>
+                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                          <Text style={styles.scheduleDayText}>{schedule.day}</Text>
+                          <Text style={styles.scheduleTimeText}> at {schedule.time}</Text>
+                        </View>
+                        <Button
+                          mode="text"
+                          onPress={() => removeSchedule(student.key, schedule.id)}
+                          textColor="#EF4444"
+                          compact
+                        >
+                          Remove
+                        </Button>
+                      </View>
+                    </Surface>
+                  ))
+                ) : (
+                  <Text style={styles.noScheduleText}>No schedules set</Text>
+                )}
+              </View>
+            ))}
           </Card.Content>
         </Card>
 
@@ -989,62 +1022,79 @@ const StudentClassManagementApp = () => {
             ))}
           </View>
           
-          <Text style={styles.modalLabel}>Select Date:</Text>
-          <TextInput
-            label="Date (YYYY-MM-DD)"
-            value={formatDate(newClassDate)}
-            onChangeText={(text) => {
-              // Validate and parse date
-              const dateMatch = text.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-              if (dateMatch) {
-                const year = parseInt(dateMatch[1], 10);
-                const month = parseInt(dateMatch[2], 10) - 1;
-                const day = parseInt(dateMatch[3], 10);
-                const parsedDate = new Date(year, month, day);
-                if (!isNaN(parsedDate.getTime())) {
-                  setNewClassDate(parsedDate);
-                }
-              }
-            }}
-            placeholder="YYYY-MM-DD"
-            style={styles.dateInput}
-            mode="outlined"
-          />
-          <Text style={styles.dateHint}>Format: YYYY-MM-DD (e.g., 2025-01-21)</Text>
-          
-          <Text style={styles.modalLabel}>Select Time: {getFormattedTime()}</Text>
-          
-          <Text style={styles.timeSubLabel}>Hour:</Text>
-          <ScrollView style={styles.timeScrollView} horizontal showsHorizontalScrollIndicator={false}>
-            <View style={styles.hourSelector}>
-              {hours.map(hour => (
-                <Chip
-                  key={hour}
-                  selected={selectedHour === hour}
-                  onPress={() => setSelectedHour(hour)}
-                  style={styles.timeChip}
-                >
-                  {String(hour).padStart(2, '0')}
-                </Chip>
+          <Text style={styles.modalLabel}>Select Date: {formatDate(newClassDate)}</Text>
+          {/* Calendar Date Picker */}
+          <View style={styles.calendar}>
+            <View style={styles.calendarHeader}>
+              <Button mode="text" onPress={() => navigateCalendar(-1)} compact>{'<'}</Button>
+              <Text style={styles.calendarMonthLabel}>
+                {calendarViewDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+              </Text>
+              <Button mode="text" onPress={() => navigateCalendar(1)} compact>{'>'}</Button>
+            </View>
+            <View style={styles.calendarDayHeaders}>
+              {calendarDayLabels.map(label => (
+                <Text key={label} style={styles.calendarDayHeaderText}>{label}</Text>
               ))}
             </View>
-          </ScrollView>
-          
-          <Text style={styles.timeSubLabel}>Minute:</Text>
-          <ScrollView style={styles.timeScrollView} horizontal showsHorizontalScrollIndicator={false}>
-            <View style={styles.minuteSelector}>
-              {minutes.map(minute => (
-                <Chip
-                  key={minute}
-                  selected={selectedMinute === minute}
-                  onPress={() => setSelectedMinute(minute)}
-                  style={styles.timeChip}
-                >
-                  {String(minute).padStart(2, '0')}
-                </Chip>
-              ))}
+            <View style={styles.calendarGrid}>
+              {getCalendarDays(calendarViewDate.getFullYear(), calendarViewDate.getMonth()).map((day, index) => {
+                const isSelected = day && newClassDate.getDate() === day
+                  && newClassDate.getMonth() === calendarViewDate.getMonth()
+                  && newClassDate.getFullYear() === calendarViewDate.getFullYear();
+                const today = new Date();
+                const isToday = day && today.getDate() === day
+                  && today.getMonth() === calendarViewDate.getMonth()
+                  && today.getFullYear() === calendarViewDate.getFullYear();
+                return (
+                  <TouchableOpacity
+                    key={index}
+                    style={[
+                      styles.calendarDay,
+                      isSelected && styles.calendarDaySelected,
+                      isToday && !isSelected && styles.calendarDayToday,
+                    ]}
+                    onPress={() => day && selectCalendarDay(day)}
+                    disabled={!day}
+                  >
+                    <Text style={[
+                      styles.calendarDayText,
+                      isSelected && styles.calendarDayTextSelected,
+                    ]}>
+                      {day || ''}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
             </View>
-          </ScrollView>
+          </View>
+
+          {/* Time Stepper */}
+          <Text style={styles.modalLabel}>Select Time:</Text>
+          <View style={styles.timeStepperDisplay}>
+            <Text style={styles.timeStepperValue}>{getFormattedTime()}</Text>
+          </View>
+          <View style={styles.timeStepperContainer}>
+            <View style={styles.timeStepperRow}>
+              <Text style={styles.timeStepperLabel}>Hour</Text>
+              <Button mode="contained" onPress={() => incrementHour(selectedHour, -1)} compact style={styles.timeStepperButton}>-</Button>
+              <Text style={styles.timeStepperNum}>{String(selectedHour).padStart(2, '0')}</Text>
+              <Button mode="contained" onPress={() => incrementHour(selectedHour, 1)} compact style={styles.timeStepperButton}>+</Button>
+            </View>
+            <View style={styles.timeStepperRow}>
+              <Text style={styles.timeStepperLabel}>Min</Text>
+              <Button mode="contained" onPress={() => incrementMinute(selectedMinute, -5)} compact style={styles.timeStepperButton}>-</Button>
+              <Text style={styles.timeStepperNum}>{String(selectedMinute).padStart(2, '0')}</Text>
+              <Button mode="contained" onPress={() => incrementMinute(selectedMinute, 5)} compact style={styles.timeStepperButton}>+</Button>
+            </View>
+          </View>
+          <View style={styles.quickTimeRow}>
+            {[0, 15, 30, 45].map(min => (
+              <Chip key={min} selected={selectedMinute === min} onPress={() => setQuickMinute(min)} style={styles.quickTimeChip}>
+                :{String(min).padStart(2, '0')}
+              </Chip>
+            ))}
+          </View>
           
           <View style={styles.modalButtons}>
             <Button 
@@ -1089,105 +1139,50 @@ const StudentClassManagementApp = () => {
           </View>
           
           <Text style={styles.modalLabel}>Select Day:</Text>
-          <View style={styles.daySelector}>
-            {daysOfWeek.map(day => (
-              <Chip
-                key={day}
-                selected={selectedDay === day}
-                onPress={() => setSelectedDay(day)}
-                style={styles.dayChip}
-              >
-                {day}
+          <View style={styles.dayGrid}>
+            {daysOfWeek.map(day => {
+              const isSelected = selectedDay === day;
+              return (
+                <TouchableOpacity
+                  key={day}
+                  style={[styles.dayGridItem, isSelected && styles.dayGridItemSelected]}
+                  onPress={() => setSelectedDay(day)}
+                >
+                  <Text style={[styles.dayGridText, isSelected && styles.dayGridTextSelected]}>
+                    {day.substring(0, 3)}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+          <Text style={styles.daySelectedLabel}>Selected: {selectedDay}</Text>
+          
+          {/* Time Stepper */}
+          <Text style={styles.modalLabel}>Select Time:</Text>
+          <View style={styles.timeStepperDisplay}>
+            <Text style={styles.timeStepperValue}>{getFormattedScheduleTime()}</Text>
+          </View>
+          <View style={styles.timeStepperContainer}>
+            <View style={styles.timeStepperRow}>
+              <Text style={styles.timeStepperLabel}>Hour</Text>
+              <Button mode="contained" onPress={() => incrementHour(selectedScheduleHour, -1, true)} compact style={styles.timeStepperButton}>-</Button>
+              <Text style={styles.timeStepperNum}>{String(selectedScheduleHour).padStart(2, '0')}</Text>
+              <Button mode="contained" onPress={() => incrementHour(selectedScheduleHour, 1, true)} compact style={styles.timeStepperButton}>+</Button>
+            </View>
+            <View style={styles.timeStepperRow}>
+              <Text style={styles.timeStepperLabel}>Min</Text>
+              <Button mode="contained" onPress={() => incrementMinute(selectedScheduleMinute, -5, true)} compact style={styles.timeStepperButton}>-</Button>
+              <Text style={styles.timeStepperNum}>{String(selectedScheduleMinute).padStart(2, '0')}</Text>
+              <Button mode="contained" onPress={() => incrementMinute(selectedScheduleMinute, 5, true)} compact style={styles.timeStepperButton}>+</Button>
+            </View>
+          </View>
+          <View style={styles.quickTimeRow}>
+            {[0, 15, 30, 45].map(min => (
+              <Chip key={min} selected={selectedScheduleMinute === min} onPress={() => setQuickMinute(min, true)} style={styles.quickTimeChip}>
+                :{String(min).padStart(2, '0')}
               </Chip>
             ))}
           </View>
-          
-          <Text style={styles.modalLabel}>Select Time: {getFormattedScheduleTime()}</Text>
-          
-          <View style={styles.timeInputModeContainer}>
-            <Button 
-              mode={scheduleTimeInputMode === 'selector' ? 'contained' : 'outlined'}
-              onPress={() => setScheduleTimeInputMode('selector')}
-              style={styles.timeInputModeButton}
-              compact
-            >
-              Selector
-            </Button>
-            <Button 
-              mode={scheduleTimeInputMode === 'input' ? 'contained' : 'outlined'}
-              onPress={() => setScheduleTimeInputMode('input')}
-              style={styles.timeInputModeButton}
-              compact
-            >
-              Manual Input
-            </Button>
-          </View>
-
-          {scheduleTimeInputMode === 'input' ? (
-            <View style={styles.timeInputContainer}>
-              <TextInput
-                label="Time (HH:MM)"
-                value={scheduleTimeInputText}
-                onChangeText={(text) => handleTimeInputChange(text, true)}
-                placeholder="10:00"
-                keyboardType="numeric"
-                style={styles.timeInput}
-                mode="outlined"
-              />
-              <Text style={styles.timeInputHint}>Format: HH:MM (24-hour)</Text>
-            </View>
-          ) : (
-            <View>
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.timeScrollView}>
-                <Text style={styles.timeSubLabel}>Hour:</Text>
-                <View style={styles.hourSelector}>
-                  {hours.map(hour => (
-                    <Chip
-                      key={hour}
-                      selected={selectedScheduleHour === hour}
-                      onPress={() => {
-                        setSelectedScheduleHour(hour);
-                        setScheduleTimeInputText(getFormattedScheduleTime());
-                      }}
-                      style={styles.timeChip}
-                    >
-                      {String(hour).padStart(2, '0')}
-                    </Chip>
-                  ))}
-                </View>
-              </ScrollView>
-              
-              <View style={styles.minuteSelectorContainer}>
-                <View style={styles.minuteModeToggle}>
-                  <Text style={styles.timeSubLabel}>Minutes:</Text>
-                  <Button
-                    mode="text"
-                    onPress={() => setShowQuickMinutes(!showQuickMinutes)}
-                    compact
-                  >
-                    {showQuickMinutes ? 'Show All' : 'Quick Select'}
-                  </Button>
-                </View>
-                <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.timeScrollView}>
-                  <View style={styles.minuteSelector}>
-                    {(showQuickMinutes ? quickMinutes : minutes).map(minute => (
-                      <Chip
-                        key={minute}
-                        selected={selectedScheduleMinute === minute}
-                        onPress={() => {
-                          setSelectedScheduleMinute(minute);
-                          setScheduleTimeInputText(getFormattedScheduleTime());
-                        }}
-                        style={styles.timeChip}
-                      >
-                        {String(minute).padStart(2, '0')}
-                      </Chip>
-                    ))}
-                  </View>
-                </ScrollView>
-              </View>
-            </View>
-          )}
 
           <View style={styles.modalButtons}>
             <Button
@@ -1455,18 +1450,6 @@ const styles = StyleSheet.create({
   studentChip: {
     margin: 4,
   },
-  dateButton: {
-    marginVertical: 8,
-  },
-  dateInput: {
-    marginBottom: 8,
-  },
-  dateHint: {
-    fontSize: 12,
-    color: '#6B7280',
-    fontStyle: 'italic',
-    marginBottom: 16,
-  },
   modalButtons: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -1516,6 +1499,22 @@ const styles = StyleSheet.create({
     color: '#6B7280',
     marginTop: 4,
   },
+  scheduleStudentSection: {
+    marginBottom: 16,
+  },
+  scheduleStudentName: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 4,
+  },
+  scheduleDayText: {
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  scheduleTimeText: {
+    fontSize: 14,
+    color: '#6B7280',
+  },
   scheduleActionsContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -1524,97 +1523,137 @@ const styles = StyleSheet.create({
   scheduleActionButton: {
     width: '48%',
   },
-  daySelector: {
+  dayGrid: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    marginBottom: 16,
-  },
-  dayChip: {
-    margin: 2,
-  },
-  timeSelector: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    marginBottom: 16,
-  },
-  timeScrollView: {
-    maxHeight: 120,
-    marginBottom: 16,
-  },
-  hourSelector: {
-    flexDirection: 'row',
-    paddingHorizontal: 8,
-  },
-  minuteSelector: {
-    flexDirection: 'row',
-    paddingHorizontal: 8,
-  },
-  timeSubLabel: {
-    fontSize: 14,
-    fontWeight: 'bold',
+    justifyContent: 'space-between',
     marginBottom: 8,
+  },
+  dayGridItem: {
+    width: '13%',
+    aspectRatio: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 8,
+    backgroundColor: '#F3F4F6',
+  },
+  dayGridItemSelected: {
+    backgroundColor: '#3B82F6',
+  },
+  dayGridText: {
+    fontSize: 12,
+    fontWeight: '600',
     color: '#374151',
   },
-  timeChip: {
-    margin: 2,
-    minWidth: 50,
+  dayGridTextSelected: {
+    color: '#FFFFFF',
   },
-  monthsList: {
-    maxHeight: 300,
-    marginBottom: 16,
-  },
-  monthItem: {
-    marginVertical: 4,
-    borderRadius: 8,
-    elevation: 1,
-  },
-  selectedMonthItem: {
-    backgroundColor: '#EBF8FF',
-    elevation: 3,
-  },
-  monthButton: {
-    width: '100%',
-    justifyContent: 'flex-start',
-  },
-  monthButtonText: {
-    fontSize: 16,
-    textAlign: 'left',
-  },
-  selectedMonthButtonText: {
-    color: '#1E40AF',
-    fontWeight: 'bold',
+  daySelectedLabel: {
+    fontSize: 13,
+    color: '#6B7280',
+    marginBottom: 12,
+    textAlign: 'center',
   },
   bottomPadding: {
     height: 100,
   },
-  timeInputModeContainer: {
-    flexDirection: 'row',
-    marginBottom: 16,
-    justifyContent: 'center',
-  },
-  timeInputModeButton: {
-    marginHorizontal: 8,
-    minWidth: 100,
-  },
-  timeInputContainer: {
+  // Calendar styles
+  calendar: {
+    backgroundColor: '#F9FAFB',
+    borderRadius: 8,
+    padding: 12,
     marginBottom: 16,
   },
-  timeInput: {
-    marginBottom: 8,
-  },
-  timeInputHint: {
-    fontSize: 12,
-    color: '#6B7280',
-    fontStyle: 'italic',
-  },
-  minuteSelectorContainer: {
-    marginTop: 8,
-  },
-  minuteModeToggle: {
+  calendarHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    marginBottom: 12,
+  },
+  calendarMonthLabel: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#1E40AF',
+  },
+  calendarDayHeaders: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
     marginBottom: 8,
+  },
+  calendarDayHeaderText: {
+    width: 36,
+    textAlign: 'center',
+    fontSize: 12,
+    fontWeight: 'bold',
+    color: '#6B7280',
+  },
+  calendarGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+  },
+  calendarDay: {
+    width: '14.28%',
+    aspectRatio: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 20,
+  },
+  calendarDaySelected: {
+    backgroundColor: '#3B82F6',
+  },
+  calendarDayToday: {
+    backgroundColor: '#DBEAFE',
+  },
+  calendarDayText: {
+    fontSize: 14,
+    color: '#374151',
+  },
+  calendarDayTextSelected: {
+    color: '#FFFFFF',
+    fontWeight: 'bold',
+  },
+  // Time stepper styles
+  timeStepperDisplay: {
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  timeStepperValue: {
+    fontSize: 32,
+    fontWeight: 'bold',
+    color: '#3B82F6',
+  },
+  timeStepperContainer: {
+    marginBottom: 12,
+  },
+  timeStepperRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginVertical: 4,
+  },
+  timeStepperLabel: {
+    width: 40,
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#374151',
+  },
+  timeStepperButton: {
+    marginHorizontal: 8,
+    minWidth: 44,
+  },
+  timeStepperNum: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    width: 50,
+    textAlign: 'center',
+    color: '#1F2937',
+  },
+  quickTimeRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginBottom: 12,
+  },
+  quickTimeChip: {
+    marginHorizontal: 4,
   },
   scheduleRow: {
     flexDirection: 'row',
