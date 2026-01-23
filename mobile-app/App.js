@@ -60,6 +60,7 @@ const StudentClassManagementApp = () => {
   const [selectedScheduleMinute, setSelectedScheduleMinute] = useState(0);
   const [calendarViewDate, setCalendarViewDate] = useState(new Date());
   const [expandedClasses, setExpandedClasses] = useState({});
+  const [showSchedules, setShowSchedules] = useState(false);
 
   const toggleClassDetails = (studentKey) => {
     setExpandedClasses(prev => ({ ...prev, [studentKey]: !prev[studentKey] }));
@@ -879,39 +880,49 @@ const StudentClassManagementApp = () => {
           </Card.Content>
         </Card>
 
-        {/* Weekly Schedules - Always Visible */}
+        {/* Weekly Schedules */}
         <Card style={styles.card}>
-          <Card.Title title="Weekly Schedules" />
           <Card.Content>
-            {students.map(student => (
-              <View key={student.key} style={styles.scheduleStudentSection}>
-                <Text style={[styles.scheduleStudentName, { color: student.color }]}>
-                  {student.name}
-                </Text>
-                {(schedules[student.key] || []).length > 0 ? (
-                  (schedules[student.key] || []).map(schedule => (
-                    <Surface key={schedule.id} style={styles.scheduleCard}>
-                      <View style={styles.scheduleRow}>
-                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                          <Text style={styles.scheduleDayText}>{schedule.day}</Text>
-                          <Text style={styles.scheduleTimeText}> at {schedule.time}</Text>
-                        </View>
-                        <Button
-                          mode="text"
-                          onPress={() => removeSchedule(student.key, schedule.id)}
-                          textColor="#EF4444"
-                          compact
-                        >
-                          Remove
-                        </Button>
-                      </View>
-                    </Surface>
-                  ))
-                ) : (
-                  <Text style={styles.noScheduleText}>No schedules set</Text>
-                )}
+            <Button
+              mode="outlined"
+              onPress={() => setShowSchedules(!showSchedules)}
+              style={styles.toggleDetailsButton}
+            >
+              {showSchedules ? 'Hide Schedules' : 'View Weekly Schedules'}
+            </Button>
+            {showSchedules && (
+              <View style={{ marginTop: 12 }}>
+                {students.map(student => (
+                  <View key={student.key} style={styles.scheduleStudentSection}>
+                    <Text style={[styles.scheduleStudentName, { color: student.color }]}>
+                      {student.name}
+                    </Text>
+                    {(schedules[student.key] || []).length > 0 ? (
+                      (schedules[student.key] || []).map(schedule => (
+                        <Surface key={schedule.id} style={styles.scheduleCard}>
+                          <View style={styles.scheduleRow}>
+                            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                              <Text style={styles.scheduleDayText}>{schedule.day}</Text>
+                              <Text style={styles.scheduleTimeText}> at {schedule.time}</Text>
+                            </View>
+                            <Button
+                              mode="text"
+                              onPress={() => removeSchedule(student.key, schedule.id)}
+                              textColor="#EF4444"
+                              compact
+                            >
+                              Remove
+                            </Button>
+                          </View>
+                        </Surface>
+                      ))
+                    ) : (
+                      <Text style={styles.noScheduleText}>No schedules set</Text>
+                    )}
+                  </View>
+                ))}
               </View>
-            ))}
+            )}
           </Card.Content>
         </Card>
 
@@ -1138,21 +1149,28 @@ const StudentClassManagementApp = () => {
           contentContainerStyle={styles.modal}
         >
           <Text variant="headlineSmall" style={styles.modalTitle}>Add Schedule</Text>
-          
+          <ScrollView style={{ maxHeight: 500 }}>
           <Text style={styles.modalLabel}>Select Student:</Text>
-          <View style={styles.studentSelector}>
+          <View style={styles.studentToggleRow}>
             {students.map(student => (
-              <Chip
+              <TouchableOpacity
                 key={student.key}
-                selected={selectedStudent === student.key}
+                style={[
+                  styles.studentToggleButton,
+                  selectedStudent === student.key && { backgroundColor: student.color },
+                ]}
                 onPress={() => setSelectedStudent(student.key)}
-                style={styles.studentChip}
               >
-                {student.name}
-              </Chip>
+                <Text style={[
+                  styles.studentToggleText,
+                  selectedStudent === student.key && { color: '#FFFFFF' },
+                ]}>
+                  {student.name}
+                </Text>
+              </TouchableOpacity>
             ))}
           </View>
-          
+
           <Text style={styles.modalLabel}>Select Day:</Text>
           <View style={styles.dayGrid}>
             {daysOfWeek.map(day => {
@@ -1199,6 +1217,7 @@ const StudentClassManagementApp = () => {
             ))}
           </View>
 
+          </ScrollView>
           <View style={styles.modalButtons}>
             <Button
               mode="outlined"
@@ -1210,7 +1229,7 @@ const StudentClassManagementApp = () => {
             <Button
               mode="contained"
               onPress={addSchedule}
-              style={styles.modalButtonHalf}
+              style={[styles.modalButtonHalf, { backgroundColor: '#6366F1' }]}
             >
               Add Schedule
             </Button>
@@ -1424,6 +1443,23 @@ const styles = StyleSheet.create({
   toggleDetailsButton: {
     marginTop: 8,
     borderColor: '#D1D5DB',
+  },
+  studentToggleRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 16,
+  },
+  studentToggleButton: {
+    flex: 0.48,
+    paddingVertical: 12,
+    borderRadius: 8,
+    backgroundColor: '#F3F4F6',
+    alignItems: 'center',
+  },
+  studentToggleText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#374151',
   },
   statsContainer: {
     flexDirection: 'row',
