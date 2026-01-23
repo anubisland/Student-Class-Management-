@@ -59,6 +59,11 @@ const StudentClassManagementApp = () => {
   const [selectedScheduleHour, setSelectedScheduleHour] = useState(10);
   const [selectedScheduleMinute, setSelectedScheduleMinute] = useState(0);
   const [calendarViewDate, setCalendarViewDate] = useState(new Date());
+  const [expandedClasses, setExpandedClasses] = useState({});
+
+  const toggleClassDetails = (studentKey) => {
+    setExpandedClasses(prev => ({ ...prev, [studentKey]: !prev[studentKey] }));
+  };
 
   const students = [
     { key: 'kareem', name: 'Kareem', color: '#3B82F6' },
@@ -824,6 +829,56 @@ const StudentClassManagementApp = () => {
           </Card.Content>
         </Card>
 
+        {/* Quick Actions */}
+        <Card style={styles.card}>
+          <Card.Content>
+            <View style={styles.actionButtonsRow}>
+              <TouchableOpacity
+                style={[styles.actionTile, { backgroundColor: '#EEF2FF' }]}
+                onPress={() => setScheduleModalVisible(true)}
+              >
+                <Text style={[styles.actionTileIcon, { color: '#6366F1' }]}>+</Text>
+                <Text style={styles.actionTileLabel}>Add Schedule</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.actionTile, { backgroundColor: '#ECFDF5' }]}
+                onPress={() => setClassModalVisible(true)}
+              >
+                <Text style={[styles.actionTileIcon, { color: '#10B981' }]}>+</Text>
+                <Text style={styles.actionTileLabel}>Add Extra Class</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.actionTile, { backgroundColor: '#FEF3C7' }]}
+                onPress={() => setReportModalVisible(true)}
+              >
+                <Text style={[styles.actionTileIcon, { color: '#D97706' }]}>R</Text>
+                <Text style={styles.actionTileLabel}>Reports</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.actionTile, { backgroundColor: '#F3E8FF' }]}
+                onPress={() => setPriceModalVisible(true)}
+              >
+                <Text style={[styles.actionTileIcon, { color: '#7C3AED' }]}>$</Text>
+                <Text style={styles.actionTileLabel}>Set Prices</Text>
+              </TouchableOpacity>
+            </View>
+            <View style={styles.generateRow}>
+              {students.map(student => (
+                <Button
+                  key={student.key}
+                  mode="contained"
+                  onPress={() => generateClassesForStudent(student.key)}
+                  style={[styles.generateButtonSmall, { backgroundColor: student.color }]}
+                  compact
+                  disabled={!schedules[student.key] || schedules[student.key].length === 0}
+                >
+                  Generate {student.name}
+                </Button>
+              ))}
+            </View>
+          </Card.Content>
+        </Card>
+
         {/* Weekly Schedules - Always Visible */}
         <Card style={styles.card}>
           <Card.Title title="Weekly Schedules" />
@@ -864,6 +919,7 @@ const StudentClassManagementApp = () => {
         {students.map(student => {
           const studentClasses = getMonthlyClasses(student.key, currentMonth);
           const stats = getStudentStats(student.key, currentMonth);
+          const isExpanded = expandedClasses[student.key];
           return (
             <Card key={student.key} style={styles.card}>
               <Card.Title
@@ -877,26 +933,37 @@ const StudentClassManagementApp = () => {
                 </View>
 
                 {studentClasses.length > 0 ? (
-                  <View style={styles.classListContainer}>
-                    <Text style={styles.classListTitle}>Class Details:</Text>
-                    {studentClasses.map((cls, index) => (
-                      <Surface key={cls.id} style={styles.classItem}>
-                        <View style={styles.classItemRow}>
-                          <View style={styles.classItemInfo}>
-                            <Text style={styles.classItemDate}>{cls.date}</Text>
-                            <Text style={styles.classItemTime}>at {cls.time}</Text>
-                          </View>
-                          <Button
-                            mode="text"
-                            onPress={() => removeClass(student.key, cls.id)}
-                            textColor="#EF4444"
-                            compact
-                          >
-                            Delete
-                          </Button>
-                        </View>
-                      </Surface>
-                    ))}
+                  <View>
+                    <Button
+                      mode="outlined"
+                      onPress={() => toggleClassDetails(student.key)}
+                      style={styles.toggleDetailsButton}
+                      compact
+                    >
+                      {isExpanded ? 'Hide Details' : `View Details (${studentClasses.length})`}
+                    </Button>
+                    {isExpanded && (
+                      <View style={styles.classListContainer}>
+                        {studentClasses.map((cls) => (
+                          <Surface key={cls.id} style={styles.classItem}>
+                            <View style={styles.classItemRow}>
+                              <View style={styles.classItemInfo}>
+                                <Text style={styles.classItemDate}>{cls.date}</Text>
+                                <Text style={styles.classItemTime}>at {cls.time}</Text>
+                              </View>
+                              <Button
+                                mode="text"
+                                onPress={() => removeClass(student.key, cls.id)}
+                                textColor="#EF4444"
+                                compact
+                              >
+                                Delete
+                              </Button>
+                            </View>
+                          </Surface>
+                        ))}
+                      </View>
+                    )}
                   </View>
                 ) : (
                   <Text style={styles.noClassesText}>No classes scheduled this month</Text>
@@ -906,60 +973,7 @@ const StudentClassManagementApp = () => {
           );
         })}
 
-        {/* Quick Actions */}
-        <Card style={styles.card}>
-          <Card.Title title="Quick Actions" />
-          <Card.Content>
-            <View style={styles.actionButtonsContainer}>
-              <Button 
-                mode="contained" 
-                onPress={() => setPriceModalVisible(true)}
-                style={[styles.actionButton, { backgroundColor: '#6366F1' }]}
-              >
-                Set Prices
-              </Button>
-              <Button 
-                mode="contained" 
-                onPress={() => setScheduleModalVisible(true)}
-                style={[styles.actionButton, { backgroundColor: '#A855F7' }]}
-              >
-                Add Schedule
-              </Button>
-              <Button 
-                mode="contained" 
-                onPress={() => setClassModalVisible(true)}
-                style={[styles.actionButton, { backgroundColor: '#10B981' }]}
-              >
-                Add Class
-              </Button>
-              <Button
-                mode="contained"
-                onPress={() => setReportModalVisible(true)}
-                style={[styles.actionButton, { backgroundColor: '#F59E0B' }]}
-              >
-                Reports
-              </Button>
-            </View>
-          </Card.Content>
-        </Card>
-
-        {/* Generate Monthly Classes */}
-        <Card style={styles.card}>
-          <Card.Title title="Generate Monthly Classes" />
-          <Card.Content>
-            {students.map(student => (
-              <Button 
-                key={student.key}
-                mode="contained" 
-                onPress={() => generateClassesForStudent(student.key)}
-                style={[styles.generateButton, { backgroundColor: student.color }]}
-                disabled={!schedules[student.key] || schedules[student.key].length === 0}
-              >
-                Generate Classes for {student.name}
-              </Button>
-            ))}
-          </Card.Content>
-        </Card>
+        {/* Bottom Padding */}
 
         <View style={styles.bottomPadding} />
       </ScrollView>
@@ -1006,8 +1020,8 @@ const StudentClassManagementApp = () => {
           onDismiss={() => setClassModalVisible(false)}
           contentContainerStyle={styles.modal}
         >
-          <Text variant="headlineSmall" style={styles.modalTitle}>Add Class</Text>
-          
+          <Text variant="headlineSmall" style={styles.modalTitle}>Add Extra Class</Text>
+          <ScrollView style={{ maxHeight: 500 }}>
           <Text style={styles.modalLabel}>Select Student:</Text>
           <View style={styles.studentSelector}>
             {students.map(student => (
@@ -1096,20 +1110,21 @@ const StudentClassManagementApp = () => {
             ))}
           </View>
           
+          </ScrollView>
           <View style={styles.modalButtons}>
-            <Button 
-              mode="outlined" 
+            <Button
+              mode="outlined"
               onPress={() => setClassModalVisible(false)}
               style={styles.modalButtonHalf}
             >
               Cancel
             </Button>
-            <Button 
-              mode="contained" 
+            <Button
+              mode="contained"
               onPress={addClass}
-              style={styles.modalButtonHalf}
+              style={[styles.modalButtonHalf, { backgroundColor: '#10B981' }]}
             >
-              Add Class
+              Confirm
             </Button>
           </View>
         </Modal>
@@ -1375,6 +1390,41 @@ const styles = StyleSheet.create({
     marginVertical: 4,
     marginHorizontal: 0,
   },
+  actionButtonsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+  },
+  actionTile: {
+    width: '23%',
+    aspectRatio: 1,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 8,
+  },
+  actionTileIcon: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 4,
+  },
+  actionTileLabel: {
+    fontSize: 10,
+    fontWeight: '600',
+    color: '#374151',
+    textAlign: 'center',
+  },
+  generateRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  generateButtonSmall: {
+    flex: 0.48,
+  },
+  toggleDetailsButton: {
+    marginTop: 8,
+    borderColor: '#D1D5DB',
+  },
   statsContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -1412,15 +1462,6 @@ const styles = StyleSheet.create({
     fontStyle: 'italic',
     color: '#6B7280',
     marginTop: 8,
-  },
-  actionButtonsContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-  },
-  actionButton: {
-    width: '48%',
-    marginVertical: 4,
   },
   modal: {
     backgroundColor: 'white',
@@ -1666,12 +1707,6 @@ const styles = StyleSheet.create({
   },
   classListContainer: {
     marginTop: 12,
-  },
-  classListTitle: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    marginBottom: 8,
-    color: '#374151',
   },
   classItem: {
     padding: 10,
