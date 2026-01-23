@@ -40,6 +40,13 @@ coverage/
 # Metro bundler
 .metro-health-check*
 
+# iOS
+Pods/
+DerivedData/
+*.xcarchive
+xcuserdata/
+.xcode.env.local
+
 # React Native
 *.jsbundle
 

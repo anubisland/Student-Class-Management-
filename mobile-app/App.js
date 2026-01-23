@@ -1475,6 +1475,9 @@ const styles = StyleSheet.create({
   reportButton: {
     marginTop: 8,
   },
+  downloadButton: {
+    marginTop: 4,
+  },
   sectionTitle: {
     textAlign: 'center',
     marginBottom: 16,
