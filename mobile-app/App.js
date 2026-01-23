@@ -1217,24 +1217,6 @@ const StudentClassManagementApp = () => {
             ))}
           </View>
 
-          </ScrollView>
-          <View style={styles.modalButtons}>
-            <Button
-              mode="outlined"
-              onPress={() => setScheduleModalVisible(false)}
-              style={styles.modalButtonHalf}
-            >
-              Cancel
-            </Button>
-            <Button
-              mode="contained"
-              onPress={addSchedule}
-              style={[styles.modalButtonHalf, { backgroundColor: '#6366F1' }]}
-            >
-              Add Schedule
-            </Button>
-          </View>
-          
           {/* Show existing schedules */}
           <Text style={styles.modalLabel}>
             Existing Schedules for {students.find(s => s.key === selectedStudent)?.name}:
@@ -1258,6 +1240,24 @@ const StudentClassManagementApp = () => {
           ) : (
             <Text style={styles.noScheduleText}>No schedules yet</Text>
           )}
+
+          </ScrollView>
+          <View style={styles.modalButtons}>
+            <Button
+              mode="outlined"
+              onPress={() => setScheduleModalVisible(false)}
+              style={styles.modalButtonHalf}
+            >
+              Cancel
+            </Button>
+            <Button
+              mode="contained"
+              onPress={addSchedule}
+              style={[styles.modalButtonHalf, { backgroundColor: '#6366F1' }]}
+            >
+              Add Schedule
+            </Button>
+          </View>
         </Modal>
       </Portal>
 
