@@ -591,3 +591,8 @@ let classManager;
 document.addEventListener('DOMContentLoaded', function() {
     classManager = new StudentClassManager();
 });
+
+// Export for testing (no-op in browsers)
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = { StudentClassManager };
+}
