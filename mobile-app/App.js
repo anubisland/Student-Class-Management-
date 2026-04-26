@@ -756,10 +756,16 @@ const StudentClassManagementApp = () => {
       <ScrollView style={styles.container}>
         {/* Status */}
         {saveStatus ? (
-          <Surface style={styles.statusCard}>
+          <Surface
+            style={styles.statusCard}
+            accessible={true}
+            accessibilityRole="alert"
+            accessibilityLiveRegion="assertive"
+            accessibilityLabel={saveStatus}
+          >
             <Text style={[
               styles.statusText,
-              { color: saveStatus.includes('✓') ? '#10B981' : 
+              { color: saveStatus.includes('✓') ? '#10B981' :
                        saveStatus.includes('✗') ? '#EF4444' : '#F59E0B' }
             ]}>
               {saveStatus}
@@ -772,23 +778,30 @@ const StudentClassManagementApp = () => {
           <Card.Title title="Monthly Overview" />
           <Card.Content>
             <View style={styles.monthNavigationContainer}>
-              <Button 
-                mode="contained" 
+              <Button
+                mode="contained"
                 onPress={() => navigateMonth(-1)}
                 style={styles.navButton}
+                accessibilityLabel="Previous month"
                 compact
               >
                 {"< Prev"}
               </Button>
-              
-              <Text variant="headlineMedium" style={styles.currentMonthDisplay}>
+
+              <Text
+                variant="headlineMedium"
+                style={styles.currentMonthDisplay}
+                accessibilityRole="header"
+                aria-level={2}
+              >
                 {getMonthName(currentMonth)}
               </Text>
-              
-              <Button 
-                mode="contained" 
+
+              <Button
+                mode="contained"
                 onPress={() => navigateMonth(1)}
                 style={styles.navButton}
+                accessibilityLabel="Next month"
                 compact
               >
                 Next >
@@ -804,16 +817,24 @@ const StudentClassManagementApp = () => {
             </Button>
             
             <View style={styles.statsContainer}>
-              <Surface style={[styles.studentCard, { backgroundColor: '#EBF8FF' }]}>
+              <Surface
+                style={[styles.studentCard, { backgroundColor: '#EBF8FF' }]}
+                accessible={true}
+                accessibilityLabel={`Kareem: ${kareemStats.classCount} classes this month, total $${kareemStats.total.toFixed(2)}`}
+              >
                 <Text variant="headlineSmall" style={{ color: '#1E40AF' }}>Kareem</Text>
                 <Text>Classes: {kareemStats.classCount}</Text>
-                <Text style={{ color: '#10B981' }}>Total: ${kareemStats.total.toFixed(2)}</Text>
+                <Text>Total: ${kareemStats.total.toFixed(2)}</Text>
               </Surface>
-              
-              <Surface style={[styles.studentCard, { backgroundColor: '#FDF2F8' }]}>
+
+              <Surface
+                style={[styles.studentCard, { backgroundColor: '#FDF2F8' }]}
+                accessible={true}
+                accessibilityLabel={`Sara_Hana: ${saraHanaStats.classCount} classes this month, total $${saraHanaStats.total.toFixed(2)}`}
+              >
                 <Text variant="headlineSmall" style={{ color: '#BE185D' }}>Sara_Hana</Text>
                 <Text>Classes: {saraHanaStats.classCount}</Text>
-                <Text style={{ color: '#10B981' }}>Total: ${saraHanaStats.total.toFixed(2)}</Text>
+                <Text>Total: ${saraHanaStats.total.toFixed(2)}</Text>
               </Surface>
             </View>
             
@@ -837,29 +858,37 @@ const StudentClassManagementApp = () => {
               <TouchableOpacity
                 style={[styles.actionTile, { backgroundColor: '#EEF2FF' }]}
                 onPress={() => setScheduleModalVisible(true)}
+                accessibilityLabel="Add Schedule"
+                accessibilityRole="button"
               >
-                <Text style={[styles.actionTileIcon, { color: '#6366F1' }]}>+</Text>
+                <Text aria-hidden style={[styles.actionTileIcon, { color: '#6366F1' }]}>+</Text>
                 <Text style={styles.actionTileLabel}>Add Schedule</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.actionTile, { backgroundColor: '#ECFDF5' }]}
                 onPress={() => setClassModalVisible(true)}
+                accessibilityLabel="Add Extra Class"
+                accessibilityRole="button"
               >
-                <Text style={[styles.actionTileIcon, { color: '#10B981' }]}>+</Text>
+                <Text aria-hidden style={[styles.actionTileIcon, { color: '#10B981' }]}>+</Text>
                 <Text style={styles.actionTileLabel}>Add Extra Class</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.actionTile, { backgroundColor: '#FEF3C7' }]}
                 onPress={() => setReportModalVisible(true)}
+                accessibilityLabel="View and download reports"
+                accessibilityRole="button"
               >
-                <Text style={[styles.actionTileIcon, { color: '#D97706' }]}>R</Text>
+                <Text aria-hidden style={[styles.actionTileIcon, { color: '#D97706' }]}>R</Text>
                 <Text style={styles.actionTileLabel}>Reports</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.actionTile, { backgroundColor: '#F3E8FF' }]}
                 onPress={() => setPriceModalVisible(true)}
+                accessibilityLabel="Set class prices"
+                accessibilityRole="button"
               >
-                <Text style={[styles.actionTileIcon, { color: '#7C3AED' }]}>$</Text>
+                <Text aria-hidden style={[styles.actionTileIcon, { color: '#7C3AED' }]}>$</Text>
                 <Text style={styles.actionTileLabel}>Set Prices</Text>
               </TouchableOpacity>
             </View>
@@ -870,6 +899,7 @@ const StudentClassManagementApp = () => {
                   mode="contained"
                   onPress={() => generateClassesForStudent(student.key)}
                   style={[styles.generateButtonSmall, { backgroundColor: student.color }]}
+                  accessibilityLabel={`Generate classes for ${student.name} this month`}
                   compact
                   disabled={!schedules[student.key] || schedules[student.key].length === 0}
                 >
@@ -887,6 +917,8 @@ const StudentClassManagementApp = () => {
               mode="outlined"
               onPress={() => setShowSchedules(!showSchedules)}
               style={styles.toggleDetailsButton}
+              accessibilityLabel={showSchedules ? 'Hide weekly schedules' : 'View weekly schedules'}
+              accessibilityState={{ expanded: showSchedules }}
             >
               {showSchedules ? 'Hide Schedules' : 'View Weekly Schedules'}
             </Button>
@@ -908,6 +940,7 @@ const StudentClassManagementApp = () => {
                             <Button
                               mode="text"
                               onPress={() => removeSchedule(student.key, schedule.id)}
+                              accessibilityLabel={`Remove ${schedule.day} at ${schedule.time} schedule for ${student.name}`}
                               textColor="#EF4444"
                               compact
                             >
@@ -949,6 +982,8 @@ const StudentClassManagementApp = () => {
                       mode="outlined"
                       onPress={() => toggleClassDetails(student.key)}
                       style={styles.toggleDetailsButton}
+                      accessibilityLabel={isExpanded ? `Hide class details for ${student.name}` : `View ${studentClasses.length} class details for ${student.name}`}
+                      accessibilityState={{ expanded: isExpanded }}
                       compact
                     >
                       {isExpanded ? 'Hide Details' : `View Details (${studentClasses.length})`}
@@ -965,6 +1000,8 @@ const StudentClassManagementApp = () => {
                               <Button
                                 mode="text"
                                 onPress={() => removeClass(student.key, cls.id)}
+                                accessibilityLabel={`Delete class for ${student.name} on ${cls.date} at ${cls.time}`}
+                                accessibilityHint="Double tap to confirm deletion"
                                 textColor="#EF4444"
                                 compact
                               >
@@ -991,10 +1028,12 @@ const StudentClassManagementApp = () => {
 
       {/* Price Setting Modal */}
       <Portal>
-        <Modal 
-          visible={priceModalVisible} 
+        <Modal
+          visible={priceModalVisible}
           onDismiss={() => setPriceModalVisible(false)}
           contentContainerStyle={styles.modal}
+          accessibilityViewIsModal={true}
+          accessibilityLabel="Price Settings dialog"
         >
           <Text variant="headlineSmall" style={styles.modalTitle}>Price Settings</Text>
           
@@ -1026,21 +1065,26 @@ const StudentClassManagementApp = () => {
 
       {/* Add Class Modal */}
       <Portal>
-        <Modal 
-          visible={classModalVisible} 
+        <Modal
+          visible={classModalVisible}
           onDismiss={() => setClassModalVisible(false)}
           contentContainerStyle={styles.modal}
+          accessibilityViewIsModal={true}
+          accessibilityLabel="Add Extra Class dialog"
         >
           <Text variant="headlineSmall" style={styles.modalTitle}>Add Extra Class</Text>
           <ScrollView style={{ maxHeight: 500 }}>
           <Text style={styles.modalLabel}>Select Student:</Text>
-          <View style={styles.studentSelector}>
+          <View style={styles.studentSelector} accessibilityRole="radiogroup" accessibilityLabel="Select student">
             {students.map(student => (
               <Chip
                 key={student.key}
                 selected={selectedStudent === student.key}
                 onPress={() => setSelectedStudent(student.key)}
                 style={styles.studentChip}
+                accessibilityRole="radio"
+                accessibilityState={{ selected: selectedStudent === student.key }}
+                accessibilityLabel={student.name}
               >
                 {student.name}
               </Chip>
@@ -1051,11 +1095,11 @@ const StudentClassManagementApp = () => {
           {/* Calendar Date Picker */}
           <View style={styles.calendar}>
             <View style={styles.calendarHeader}>
-              <Button mode="text" onPress={() => navigateCalendar(-1)} compact>{'<'}</Button>
-              <Text style={styles.calendarMonthLabel}>
+              <Button mode="text" onPress={() => navigateCalendar(-1)} accessibilityLabel="Previous month in calendar" compact>{'<'}</Button>
+              <Text style={styles.calendarMonthLabel} accessibilityRole="header">
                 {calendarViewDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
               </Text>
-              <Button mode="text" onPress={() => navigateCalendar(1)} compact>{'>'}</Button>
+              <Button mode="text" onPress={() => navigateCalendar(1)} accessibilityLabel="Next month in calendar" compact>{'>'}</Button>
             </View>
             <View style={styles.calendarDayHeaders}>
               {calendarDayLabels.map(label => (
@@ -1071,6 +1115,10 @@ const StudentClassManagementApp = () => {
                 const isToday = day && today.getDate() === day
                   && today.getMonth() === calendarViewDate.getMonth()
                   && today.getFullYear() === calendarViewDate.getFullYear();
+                const calDate = day ? new Date(calendarViewDate.getFullYear(), calendarViewDate.getMonth(), day) : null;
+                const calLabel = calDate
+                  ? calDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })
+                  : undefined;
                 return (
                   <TouchableOpacity
                     key={index}
@@ -1081,6 +1129,9 @@ const StudentClassManagementApp = () => {
                     ]}
                     onPress={() => day && selectCalendarDay(day)}
                     disabled={!day}
+                    accessibilityRole={day ? 'button' : undefined}
+                    accessibilityLabel={calLabel}
+                    accessibilityState={day ? { selected: isSelected } : undefined}
                   >
                     <Text style={[
                       styles.calendarDayText,
@@ -1102,20 +1153,27 @@ const StudentClassManagementApp = () => {
           <View style={styles.timeStepperContainer}>
             <View style={styles.timeStepperRow}>
               <Text style={styles.timeStepperLabel}>Hour</Text>
-              <Button mode="contained" onPress={() => incrementHour(selectedHour, -1)} compact style={styles.timeStepperButton}>-</Button>
-              <Text style={styles.timeStepperNum}>{String(selectedHour).padStart(2, '0')}</Text>
-              <Button mode="contained" onPress={() => incrementHour(selectedHour, 1)} compact style={styles.timeStepperButton}>+</Button>
+              <Button mode="contained" onPress={() => incrementHour(selectedHour, -1)} accessibilityLabel="Decrease hour" compact style={styles.timeStepperButton}>-</Button>
+              <Text style={styles.timeStepperNum} accessibilityLabel={`${selectedHour} hours`}>{String(selectedHour).padStart(2, '0')}</Text>
+              <Button mode="contained" onPress={() => incrementHour(selectedHour, 1)} accessibilityLabel="Increase hour" compact style={styles.timeStepperButton}>+</Button>
             </View>
             <View style={styles.timeStepperRow}>
               <Text style={styles.timeStepperLabel}>Min</Text>
-              <Button mode="contained" onPress={() => incrementMinute(selectedMinute, -5)} compact style={styles.timeStepperButton}>-</Button>
-              <Text style={styles.timeStepperNum}>{String(selectedMinute).padStart(2, '0')}</Text>
-              <Button mode="contained" onPress={() => incrementMinute(selectedMinute, 5)} compact style={styles.timeStepperButton}>+</Button>
+              <Button mode="contained" onPress={() => incrementMinute(selectedMinute, -5)} accessibilityLabel="Decrease minutes by 5" compact style={styles.timeStepperButton}>-</Button>
+              <Text style={styles.timeStepperNum} accessibilityLabel={`${selectedMinute} minutes`}>{String(selectedMinute).padStart(2, '0')}</Text>
+              <Button mode="contained" onPress={() => incrementMinute(selectedMinute, 5)} accessibilityLabel="Increase minutes by 5" compact style={styles.timeStepperButton}>+</Button>
             </View>
           </View>
           <View style={styles.quickTimeRow}>
             {[0, 15, 30, 45].map(min => (
-              <Chip key={min} selected={selectedMinute === min} onPress={() => setQuickMinute(min)} style={styles.quickTimeChip}>
+              <Chip
+                key={min}
+                selected={selectedMinute === min}
+                onPress={() => setQuickMinute(min)}
+                style={styles.quickTimeChip}
+                accessibilityLabel={`Set minutes to ${min}`}
+                accessibilityState={{ selected: selectedMinute === min }}
+              >
                 :{String(min).padStart(2, '0')}
               </Chip>
             ))}
@@ -1143,15 +1201,17 @@ const StudentClassManagementApp = () => {
 
       {/* Schedule Modal */}
       <Portal>
-        <Modal 
-          visible={scheduleModalVisible} 
+        <Modal
+          visible={scheduleModalVisible}
           onDismiss={() => setScheduleModalVisible(false)}
           contentContainerStyle={styles.modal}
+          accessibilityViewIsModal={true}
+          accessibilityLabel="Add Schedule dialog"
         >
           <Text variant="headlineSmall" style={styles.modalTitle}>Add Schedule</Text>
           <ScrollView style={{ maxHeight: 500 }}>
           <Text style={styles.modalLabel}>Select Student:</Text>
-          <View style={styles.studentToggleRow}>
+          <View style={styles.studentToggleRow} accessibilityRole="radiogroup" accessibilityLabel="Select student">
             {students.map(student => (
               <TouchableOpacity
                 key={student.key}
@@ -1160,6 +1220,9 @@ const StudentClassManagementApp = () => {
                   selectedStudent === student.key && { backgroundColor: student.color },
                 ]}
                 onPress={() => setSelectedStudent(student.key)}
+                accessibilityRole="radio"
+                accessibilityLabel={student.name}
+                accessibilityState={{ selected: selectedStudent === student.key }}
               >
                 <Text style={[
                   styles.studentToggleText,
@@ -1172,7 +1235,7 @@ const StudentClassManagementApp = () => {
           </View>
 
           <Text style={styles.modalLabel}>Select Day:</Text>
-          <View style={styles.dayGrid}>
+          <View style={styles.dayGrid} accessibilityRole="radiogroup" accessibilityLabel="Select day of week">
             {daysOfWeek.map(day => {
               const isSelected = selectedDay === day;
               return (
@@ -1180,6 +1243,9 @@ const StudentClassManagementApp = () => {
                   key={day}
                   style={[styles.dayGridItem, isSelected && styles.dayGridItemSelected]}
                   onPress={() => setSelectedDay(day)}
+                  accessibilityRole="radio"
+                  accessibilityLabel={day}
+                  accessibilityState={{ selected: isSelected }}
                 >
                   <Text style={[styles.dayGridText, isSelected && styles.dayGridTextSelected]}>
                     {day.substring(0, 3)}
@@ -1198,20 +1264,27 @@ const StudentClassManagementApp = () => {
           <View style={styles.timeStepperContainer}>
             <View style={styles.timeStepperRow}>
               <Text style={styles.timeStepperLabel}>Hour</Text>
-              <Button mode="contained" onPress={() => incrementHour(selectedScheduleHour, -1, true)} compact style={styles.timeStepperButton}>-</Button>
-              <Text style={styles.timeStepperNum}>{String(selectedScheduleHour).padStart(2, '0')}</Text>
-              <Button mode="contained" onPress={() => incrementHour(selectedScheduleHour, 1, true)} compact style={styles.timeStepperButton}>+</Button>
+              <Button mode="contained" onPress={() => incrementHour(selectedScheduleHour, -1, true)} accessibilityLabel="Decrease hour" compact style={styles.timeStepperButton}>-</Button>
+              <Text style={styles.timeStepperNum} accessibilityLabel={`${selectedScheduleHour} hours`}>{String(selectedScheduleHour).padStart(2, '0')}</Text>
+              <Button mode="contained" onPress={() => incrementHour(selectedScheduleHour, 1, true)} accessibilityLabel="Increase hour" compact style={styles.timeStepperButton}>+</Button>
             </View>
             <View style={styles.timeStepperRow}>
               <Text style={styles.timeStepperLabel}>Min</Text>
-              <Button mode="contained" onPress={() => incrementMinute(selectedScheduleMinute, -5, true)} compact style={styles.timeStepperButton}>-</Button>
-              <Text style={styles.timeStepperNum}>{String(selectedScheduleMinute).padStart(2, '0')}</Text>
-              <Button mode="contained" onPress={() => incrementMinute(selectedScheduleMinute, 5, true)} compact style={styles.timeStepperButton}>+</Button>
+              <Button mode="contained" onPress={() => incrementMinute(selectedScheduleMinute, -5, true)} accessibilityLabel="Decrease minutes by 5" compact style={styles.timeStepperButton}>-</Button>
+              <Text style={styles.timeStepperNum} accessibilityLabel={`${selectedScheduleMinute} minutes`}>{String(selectedScheduleMinute).padStart(2, '0')}</Text>
+              <Button mode="contained" onPress={() => incrementMinute(selectedScheduleMinute, 5, true)} accessibilityLabel="Increase minutes by 5" compact style={styles.timeStepperButton}>+</Button>
             </View>
           </View>
           <View style={styles.quickTimeRow}>
             {[0, 15, 30, 45].map(min => (
-              <Chip key={min} selected={selectedScheduleMinute === min} onPress={() => setQuickMinute(min, true)} style={styles.quickTimeChip}>
+              <Chip
+                key={min}
+                selected={selectedScheduleMinute === min}
+                onPress={() => setQuickMinute(min, true)}
+                style={styles.quickTimeChip}
+                accessibilityLabel={`Set minutes to ${min}`}
+                accessibilityState={{ selected: selectedScheduleMinute === min }}
+              >
                 :{String(min).padStart(2, '0')}
               </Chip>
             ))}
@@ -1229,6 +1302,8 @@ const StudentClassManagementApp = () => {
                   <Button
                     mode="text"
                     onPress={() => removeSchedule(selectedStudent, schedule.id)}
+                    accessibilityLabel={`Remove ${schedule.day} at ${schedule.time} schedule`}
+                    accessibilityHint="Double tap to confirm removal"
                     textColor="#EF4444"
                     compact
                   >
@@ -1263,10 +1338,12 @@ const StudentClassManagementApp = () => {
 
       {/* Reports Modal */}
       <Portal>
-        <Modal 
-          visible={reportModalVisible} 
+        <Modal
+          visible={reportModalVisible}
           onDismiss={() => setReportModalVisible(false)}
           contentContainerStyle={styles.modal}
+          accessibilityViewIsModal={true}
+          accessibilityLabel="Monthly Reports dialog"
         >
           <Text variant="headlineSmall" style={styles.modalTitle}>Monthly Reports</Text>
           <Text variant="titleMedium" style={styles.reportMonth}>

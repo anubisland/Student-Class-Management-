@@ -65,9 +65,13 @@ class StudentClassManager {
 
     showStatus(message, className) {
         const statusElement = document.getElementById('saveStatus');
-        statusElement.textContent = message;
-        statusElement.className = `text-sm font-medium ${className}`;
-        
+        // Clear first so aria-live re-announces even if message is the same
+        statusElement.textContent = '';
+        requestAnimationFrame(() => {
+            statusElement.textContent = message;
+            statusElement.className = `text-sm font-medium ${className}`;
+        });
+
         if (message.includes('✓')) {
             setTimeout(() => {
                 statusElement.textContent = '';
@@ -199,12 +203,19 @@ class StudentClassManager {
             container.innerHTML = schedules.map(schedule => `
                 <div class="bg-gray-50 p-3 rounded-lg flex justify-between items-center">
                     <span class="font-medium">${schedule.day.charAt(0).toUpperCase() + schedule.day.slice(1)} at ${schedule.time}</span>
-                    <button onclick="classManager.removeSchedule('${student}', ${schedule.id})" 
+                    <button type="button" onclick="classManager.removeSchedule('${student}', ${schedule.id})"
                             class="text-red-500 hover:text-red-700 text-sm">
                         Remove
                     </button>
                 </div>
             `).join('');
+            // Add accessible labels to each Remove button via DOM (avoids XSS-prone inline string interpolation)
+            const studentName = student === 'kareem' ? 'Kareem' : 'Sara_Hana';
+            container.querySelectorAll('button').forEach((btn, i) => {
+                const s = schedules[i];
+                const day = s.day.charAt(0).toUpperCase() + s.day.slice(1);
+                btn.setAttribute('aria-label', `Remove ${day} at ${s.time} schedule for ${studentName}`);
+            });
         });
     }
 
@@ -359,12 +370,19 @@ class StudentClassManager {
                         <div class="font-medium">${this.formatDisplayDate(cls.date)}</div>
                         <div class="text-sm text-indigo-600">at ${cls.time}</div>
                     </div>
-                    <button onclick="classManager.removeClass('${student}', ${cls.id})" 
+                    <button type="button" onclick="classManager.removeClass('${student}', ${cls.id})"
                             class="text-red-500 hover:text-red-700 text-sm px-3 py-1 rounded">
                         Delete
                     </button>
                 </div>
             `).join('');
+            // Add accessible labels to each Delete button via DOM
+            const sName = student === 'kareem' ? 'Kareem' : 'Sara_Hana';
+            container.querySelectorAll('button').forEach((btn, i) => {
+                const cls = monthlyClasses[i];
+                const dateStr = this.formatDisplayDate(cls.date, cls.time);
+                btn.setAttribute('aria-label', `Delete class for ${sName} on ${dateStr}`);
+            });
         });
     }
 
