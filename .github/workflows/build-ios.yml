@@ -90,7 +90,8 @@ jobs:
         # at developer.apple.com > Account). CI stays green; downstream steps are gated.
         continue-on-error: true
         run: |
-          xcodebuild archive             -workspace ${{ env.SCHEME }}.xcworkspace             -scheme ${{ env.SCHEME }}             -configuration Release             -sdk iphoneos             -destination 'generic/platform=iOS'             -archivePath $RUNNER_TEMP/${{ env.SCHEME }}.xcarchive             DEVELOPMENT_TEAM=${{ env.TEAM_ID }}             CODE_SIGN_STYLE=Automatic             -allowProvisioningUpdates             -authenticationKeyPath ~/private_keys/AuthKey_${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}.p8             -authenticationKeyID ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}             -authenticationKeyIssuerID ${{ secrets.APP_STORE_CONNECT_API_ISSUER_ID }}             | tail -20
+          set -o pipefail
+          xcodebuild archive             -workspace ${{ env.SCHEME }}.xcworkspace             -scheme ${{ env.SCHEME }}             -configuration Release             -sdk iphoneos             -destination 'generic/platform=iOS'             -archivePath $RUNNER_TEMP/${{ env.SCHEME }}.xcarchive             DEVELOPMENT_TEAM=${{ env.TEAM_ID }}             CODE_SIGN_STYLE=Automatic             -allowProvisioningUpdates             -authenticationKeyPath ~/private_keys/AuthKey_${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}.p8             -authenticationKeyID ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}             -authenticationKeyIssuerID ${{ secrets.APP_STORE_CONNECT_API_ISSUER_ID }}             2>&1 | tee $RUNNER_TEMP/xcodebuild.log
 
       - name: Create ExportOptions.plist
         if: steps.archive.outcome == 'success'
