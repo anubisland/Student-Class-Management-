@@ -1,48 +1,169 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" dir="ltr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Student Class Management System</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
+        :root {
+            --font-en: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            --font-ar: 'Cairo', sans-serif;
+        }
+
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-family: var(--font-en);
+        }
+
+        /* Arabic typography */
+        html.lang-ar body {
+            font-family: var(--font-ar);
+            font-size: 0.95em;
+            line-height: 1.8;
+            letter-spacing: 0;
+        }
+
+        /* Language toggle pill */
+        #langToggle {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 72px;
+            height: 32px;
+            /* 44x44 minimum touch target via padding trick */
+            min-width: 44px;
+            min-height: 44px;
+            padding: 6px;
+            box-sizing: content-box;
+            border: 1.5px solid #d1d5db;
+            border-radius: 9999px;
+            background: #fff;
+            cursor: pointer;
+            transition: border-color 0.15s, box-shadow 0.15s;
+        }
+
+        #langToggle:hover {
+            border-color: #3b82f6;
+        }
+
+        #langToggle:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.4);
+            border-color: #3b82f6;
+        }
+
+        #langToggle:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .lang-toggle-inner {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            width: 100%;
+        }
+
+        .lang-label-en,
+        .lang-label-ar {
+            font-size: 0.8125rem;
+            transition: color 0.15s, font-weight 0.15s;
+        }
+
+        .lang-label-ar {
+            font-family: var(--font-ar);
+        }
+
+        .lang-divider {
+            color: #9ca3af;
+            font-size: 0.75rem;
+        }
+
+        /* RTL-aware logical property overrides for Tailwind physical classes */
+        [dir="rtl"] .space-x-4 > * + * {
+            margin-inline-start: 1rem;
+            margin-inline-end: 0;
+        }
+
+        [dir="rtl"] .space-x-2 > * + * {
+            margin-inline-start: 0.5rem;
+            margin-inline-end: 0;
+        }
+
+        [dir="rtl"] .mr-2 {
+            margin-inline-end: 0.5rem;
+            margin-inline-start: 0;
+            margin-right: 0;
+        }
+
+        [dir="rtl"] .ml-2 {
+            margin-inline-start: 0.5rem;
+            margin-inline-end: 0;
+            margin-left: 0;
         }
     </style>
 </head>
 <body class="bg-gray-50 min-h-screen">
+
+    <!-- Load i18n before main script so t() is available -->
+    <script src="i18n.js"></script>
+
     <div class="container mx-auto px-4 py-8 max-w-6xl">
         <!-- Header -->
         <div class="bg-white rounded-lg shadow-sm p-6 mb-8">
             <div class="flex justify-between items-center">
-                <h1 class="text-3xl font-bold text-gray-800">Student Class Management System</h1>
+                <h1 class="text-3xl font-bold text-gray-800" data-i18n="app.title">Student Class Management System</h1>
                 <div class="flex items-center space-x-4">
                     <div id="saveStatus" class="text-sm font-medium"></div>
                     <div class="flex items-center space-x-2">
                         <div class="w-2 h-2 bg-green-500 rounded-full"></div>
-                        <span class="text-sm text-gray-600">Database Active</span>
+                        <span class="text-sm text-gray-600" data-i18n="app.dbActive">Database Active</span>
                     </div>
+                    <!-- Language Toggle -->
+                    <button
+                        id="langToggle"
+                        role="switch"
+                        aria-checked="false"
+                        aria-label="Switch to Arabic / التحويل إلى العربية"
+                        onclick="toggleLanguage()"
+                        title="Switch language / تغيير اللغة"
+                    >
+                        <span class="lang-toggle-inner">
+                            <span class="lang-label-en" style="font-weight: 700; color: #1d4ed8;">EN</span>
+                            <span class="lang-divider">|</span>
+                            <span class="lang-label-ar" style="font-weight: 400; color: #6b7280;">عر</span>
+                        </span>
+                    </button>
                 </div>
             </div>
         </div>
 
         <!-- Price Settings -->
         <div class="bg-white rounded-lg shadow-sm p-6 mb-8">
-            <h2 class="text-2xl font-semibold mb-6 text-gray-800">Price Settings</h2>
+            <h2 class="text-2xl font-semibold mb-6 text-gray-800" data-i18n="priceSettings.title">Price Settings</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div class="space-y-3">
-                    <label class="block text-sm font-medium text-gray-700">Kareem - Price per Class</label>
+                    <label class="block text-sm font-medium text-gray-700" data-i18n="priceSettings.kareemPrice">Kareem - Price per Class</label>
                     <div class="flex items-center">
                         <span class="text-gray-500 mr-2">$</span>
-                        <input type="number" id="kareemPrice" class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Enter price" min="0" step="0.01">
+                        <input type="number" id="kareemPrice"
+                            class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            data-i18n-placeholder="priceSettings.enterPrice"
+                            placeholder="Enter price" min="0" step="0.01">
                     </div>
                 </div>
                 <div class="space-y-3">
-                    <label class="block text-sm font-medium text-gray-700">Sara_Hana - Price per Class</label>
+                    <label class="block text-sm font-medium text-gray-700" data-i18n="priceSettings.saraHanaPrice">Sara_Hana - Price per Class</label>
                     <div class="flex items-center">
                         <span class="text-gray-500 mr-2">$</span>
-                        <input type="number" id="saraHanaPrice" class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Enter price" min="0" step="0.01">
+                        <input type="number" id="saraHanaPrice"
+                            class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            data-i18n-placeholder="priceSettings.enterPrice"
+                            placeholder="Enter price" min="0" step="0.01">
                     </div>
                 </div>
             </div>
@@ -51,51 +172,51 @@
         <!-- Monthly Overview -->
         <div class="bg-white rounded-lg shadow-sm p-6 mb-8">
             <div class="flex justify-between items-center mb-6">
-                <h2 class="text-2xl font-semibold text-gray-800">Monthly Overview</h2>
+                <h2 class="text-2xl font-semibold text-gray-800" data-i18n="monthlyOverview.title">Monthly Overview</h2>
                 <div class="flex items-center space-x-4">
-                    <label class="text-sm font-medium text-gray-700">Select Month:</label>
+                    <label class="text-sm font-medium text-gray-700" data-i18n="monthlyOverview.selectMonth">Select Month:</label>
                     <input type="month" id="monthSelector" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                 </div>
             </div>
-            
+
             <div id="currentMonth" class="text-3xl font-bold text-blue-600 mb-6 text-center"></div>
-            
+
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                 <div class="bg-blue-50 rounded-lg p-6">
-                    <h3 class="text-xl font-semibold text-blue-800 mb-4">Kareem</h3>
+                    <h3 class="text-xl font-semibold text-blue-800 mb-4" data-i18n="student.kareem">Kareem</h3>
                     <div class="space-y-2">
                         <div class="flex justify-between">
-                            <span class="text-gray-600">Classes this month:</span>
+                            <span class="text-gray-600" data-i18n="monthlyOverview.classesThisMonth">Classes this month:</span>
                             <span id="kareemMonthlyClasses" class="font-semibold">0</span>
                         </div>
                         <div class="flex justify-between">
-                            <span class="text-gray-600">Monthly total:</span>
+                            <span class="text-gray-600" data-i18n="monthlyOverview.monthlyTotal">Monthly total:</span>
                             <span id="kareemMonthlyTotal" class="font-semibold text-green-600">$0.00</span>
                         </div>
                     </div>
                 </div>
                 <div class="bg-pink-50 rounded-lg p-6">
-                    <h3 class="text-xl font-semibold text-pink-800 mb-4">Sara_Hana</h3>
+                    <h3 class="text-xl font-semibold text-pink-800 mb-4" data-i18n="student.saraHana">Sara_Hana</h3>
                     <div class="space-y-2">
                         <div class="flex justify-between">
-                            <span class="text-gray-600">Classes this month:</span>
+                            <span class="text-gray-600" data-i18n="monthlyOverview.classesThisMonth">Classes this month:</span>
                             <span id="saraHanaMonthlyClasses" class="font-semibold">0</span>
                         </div>
                         <div class="flex justify-between">
-                            <span class="text-gray-600">Monthly total:</span>
+                            <span class="text-gray-600" data-i18n="monthlyOverview.monthlyTotal">Monthly total:</span>
                             <span id="saraHanaMonthlyTotal" class="font-semibold text-green-600">$0.00</span>
                         </div>
                     </div>
                 </div>
             </div>
-            
+
             <div class="bg-gray-50 rounded-lg p-4">
                 <div class="flex justify-between items-center">
-                    <span class="text-lg font-semibold text-gray-800">Total Classes:</span>
+                    <span class="text-lg font-semibold text-gray-800" data-i18n="monthlyOverview.totalClasses">Total Classes:</span>
                     <span id="totalMonthlyClasses" class="text-2xl font-bold text-blue-600">0</span>
                 </div>
                 <div class="flex justify-between items-center mt-2">
-                    <span class="text-lg font-semibold text-gray-800">Total Revenue:</span>
+                    <span class="text-lg font-semibold text-gray-800" data-i18n="monthlyOverview.totalRevenue">Total Revenue:</span>
                     <span id="totalMonthlyRevenue" class="text-2xl font-bold text-green-600">$0.00</span>
                 </div>
             </div>
@@ -103,69 +224,63 @@
 
         <!-- Monthly Schedules -->
         <div class="bg-white rounded-lg shadow-sm p-6 mb-8">
-            <h2 class="text-2xl font-semibold mb-6 text-gray-800">Monthly Schedules</h2>
-            
+            <h2 class="text-2xl font-semibold mb-6 text-gray-800" data-i18n="schedules.title">Monthly Schedules</h2>
+
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <!-- Kareem Schedule -->
                 <div class="space-y-4">
-                    <h3 class="text-xl font-semibold text-blue-600">Kareem's Schedule</h3>
-                    
-                    <!-- Add Schedule Form -->
+                    <h3 class="text-xl font-semibold text-blue-600" data-i18n="schedules.kareemSchedule">Kareem's Schedule</h3>
+
                     <div class="bg-blue-50 p-4 rounded-lg">
-                        <h4 class="font-medium text-blue-800 mb-3">Add Schedule</h4>
+                        <h4 class="font-medium text-blue-800 mb-3" data-i18n="schedules.addScheduleTitle">Add Schedule</h4>
                         <div class="space-y-3">
                             <select id="kareemScheduleDay" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
-                                <option value="">Select Day</option>
-                                <option value="monday">Monday</option>
-                                <option value="tuesday">Tuesday</option>
-                                <option value="wednesday">Wednesday</option>
-                                <option value="thursday">Thursday</option>
-                                <option value="friday">Friday</option>
-                                <option value="saturday">Saturday</option>
-                                <option value="sunday">Sunday</option>
+                                <option value="" data-i18n-option="schedules.selectDay">Select Day</option>
+                                <option value="monday" data-i18n-option="schedules.monday">Monday</option>
+                                <option value="tuesday" data-i18n-option="schedules.tuesday">Tuesday</option>
+                                <option value="wednesday" data-i18n-option="schedules.wednesday">Wednesday</option>
+                                <option value="thursday" data-i18n-option="schedules.thursday">Thursday</option>
+                                <option value="friday" data-i18n-option="schedules.friday">Friday</option>
+                                <option value="saturday" data-i18n-option="schedules.saturday">Saturday</option>
+                                <option value="sunday" data-i18n-option="schedules.sunday">Sunday</option>
                             </select>
                             <input type="time" id="kareemScheduleTime" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" value="09:00">
-                            <button onclick="addSchedule('kareem')" class="w-full bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition duration-200">Add Schedule</button>
+                            <button onclick="addSchedule('kareem')" class="w-full bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition duration-200" data-i18n="schedules.addScheduleBtn">Add Schedule</button>
                         </div>
                     </div>
-                    
-                    <!-- Schedule List -->
+
                     <div id="kareemScheduleList" class="space-y-2"></div>
-                    
-                    <!-- Generate Classes -->
-                    <button onclick="generateMonthlyClasses('kareem')" class="w-full bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition duration-200">
+
+                    <button onclick="generateMonthlyClasses('kareem')" class="w-full bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition duration-200" data-i18n="schedules.generateClasses">
                         Generate Classes
                     </button>
                 </div>
 
                 <!-- Sara_Hana Schedule -->
                 <div class="space-y-4">
-                    <h3 class="text-xl font-semibold text-pink-600">Sara_Hana's Schedule</h3>
-                    
-                    <!-- Add Schedule Form -->
+                    <h3 class="text-xl font-semibold text-pink-600" data-i18n="schedules.saraHanaSchedule">Sara_Hana's Schedule</h3>
+
                     <div class="bg-pink-50 p-4 rounded-lg">
-                        <h4 class="font-medium text-pink-800 mb-3">Add Schedule</h4>
+                        <h4 class="font-medium text-pink-800 mb-3" data-i18n="schedules.addScheduleTitle">Add Schedule</h4>
                         <div class="space-y-3">
                             <select id="saraHanaScheduleDay" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500">
-                                <option value="">Select Day</option>
-                                <option value="monday">Monday</option>
-                                <option value="tuesday">Tuesday</option>
-                                <option value="wednesday">Wednesday</option>
-                                <option value="thursday">Thursday</option>
-                                <option value="friday">Friday</option>
-                                <option value="saturday">Saturday</option>
-                                <option value="sunday">Sunday</option>
+                                <option value="" data-i18n-option="schedules.selectDay">Select Day</option>
+                                <option value="monday" data-i18n-option="schedules.monday">Monday</option>
+                                <option value="tuesday" data-i18n-option="schedules.tuesday">Tuesday</option>
+                                <option value="wednesday" data-i18n-option="schedules.wednesday">Wednesday</option>
+                                <option value="thursday" data-i18n-option="schedules.thursday">Thursday</option>
+                                <option value="friday" data-i18n-option="schedules.friday">Friday</option>
+                                <option value="saturday" data-i18n-option="schedules.saturday">Saturday</option>
+                                <option value="sunday" data-i18n-option="schedules.sunday">Sunday</option>
                             </select>
                             <input type="time" id="saraHanaScheduleTime" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500" value="09:00">
-                            <button onclick="addSchedule('saraHana')" class="w-full bg-pink-600 text-white px-4 py-2 rounded-lg hover:bg-pink-700 transition duration-200">Add Schedule</button>
+                            <button onclick="addSchedule('saraHana')" class="w-full bg-pink-600 text-white px-4 py-2 rounded-lg hover:bg-pink-700 transition duration-200" data-i18n="schedules.addScheduleBtn">Add Schedule</button>
                         </div>
                     </div>
-                    
-                    <!-- Schedule List -->
+
                     <div id="saraHanaScheduleList" class="space-y-2"></div>
-                    
-                    <!-- Generate Classes -->
-                    <button onclick="generateMonthlyClasses('saraHana')" class="w-full bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition duration-200">
+
+                    <button onclick="generateMonthlyClasses('saraHana')" class="w-full bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition duration-200" data-i18n="schedules.generateClasses">
                         Generate Classes
                     </button>
                 </div>
@@ -174,26 +289,24 @@
 
         <!-- Add Extra Classes -->
         <div class="bg-white rounded-lg shadow-sm p-6 mb-8">
-            <h2 class="text-2xl font-semibold mb-6 text-gray-800">Add Extra Classes</h2>
-            
+            <h2 class="text-2xl font-semibold mb-6 text-gray-800" data-i18n="extraClasses.title">Add Extra Classes</h2>
+
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <!-- Kareem -->
                 <div class="space-y-4">
-                    <h3 class="text-xl font-semibold text-blue-600">Kareem</h3>
+                    <h3 class="text-xl font-semibold text-blue-600" data-i18n="student.kareem">Kareem</h3>
                     <div class="space-y-3">
                         <input type="date" id="kareemDate" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
                         <input type="time" id="kareemTime" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" value="09:00">
-                        <button onclick="addClass('kareem')" class="w-full bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition duration-200">Add Class</button>
+                        <button onclick="addClass('kareem')" class="w-full bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition duration-200" data-i18n="extraClasses.addClass">Add Class</button>
                     </div>
                 </div>
 
-                <!-- Sara_Hana -->
                 <div class="space-y-4">
-                    <h3 class="text-xl font-semibold text-pink-600">Sara_Hana</h3>
+                    <h3 class="text-xl font-semibold text-pink-600" data-i18n="student.saraHana">Sara_Hana</h3>
                     <div class="space-y-3">
                         <input type="date" id="saraHanaDate" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500">
                         <input type="time" id="saraHanaTime" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500" value="09:00">
-                        <button onclick="addClass('saraHana')" class="w-full bg-pink-600 text-white px-4 py-2 rounded-lg hover:bg-pink-700 transition duration-200">Add Class</button>
+                        <button onclick="addClass('saraHana')" class="w-full bg-pink-600 text-white px-4 py-2 rounded-lg hover:bg-pink-700 transition duration-200" data-i18n="extraClasses.addClass">Add Class</button>
                     </div>
                 </div>
             </div>
@@ -201,18 +314,16 @@
 
         <!-- Class Details -->
         <div class="bg-white rounded-lg shadow-sm p-6 mb-8">
-            <h2 class="text-2xl font-semibold mb-6 text-gray-800">Class Details</h2>
-            
+            <h2 class="text-2xl font-semibold mb-6 text-gray-800" data-i18n="classDetails.title">Class Details</h2>
+
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <!-- Kareem's Classes -->
                 <div>
-                    <h3 class="text-xl font-semibold text-blue-600 mb-4">Kareem's Classes</h3>
+                    <h3 class="text-xl font-semibold text-blue-600 mb-4" data-i18n="classDetails.kareemClasses">Kareem's Classes</h3>
                     <div id="kareemClasses" class="space-y-2 max-h-96 overflow-y-auto"></div>
                 </div>
 
-                <!-- Sara_Hana's Classes -->
                 <div>
-                    <h3 class="text-xl font-semibold text-pink-600 mb-4">Sara_Hana's Classes</h3>
+                    <h3 class="text-xl font-semibold text-pink-600 mb-4" data-i18n="classDetails.saraHanaClasses">Sara_Hana's Classes</h3>
                     <div id="saraHanaClasses" class="space-y-2 max-h-96 overflow-y-auto"></div>
                 </div>
             </div>
@@ -220,23 +331,21 @@
 
         <!-- Monthly Reports -->
         <div class="bg-white rounded-lg shadow-sm p-6">
-            <h2 class="text-2xl font-semibold mb-6 text-gray-800">Monthly Reports</h2>
-            
+            <h2 class="text-2xl font-semibold mb-6 text-gray-800" data-i18n="reports.title">Monthly Reports</h2>
+
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <!-- Kareem Report -->
                 <div class="border rounded-lg p-6">
                     <div class="flex justify-between items-center mb-4">
-                        <h3 class="text-xl font-semibold text-blue-600">Kareem's Report</h3>
-                        <button onclick="downloadReport('kareem')" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition duration-200 text-sm">Download Report</button>
+                        <h3 class="text-xl font-semibold text-blue-600" data-i18n="reports.kareemReport">Kareem's Report</h3>
+                        <button onclick="downloadReport('kareem')" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition duration-200 text-sm" data-i18n="reports.download">Download Report</button>
                     </div>
                     <div id="kareemReport" class="text-sm"></div>
                 </div>
 
-                <!-- Sara_Hana Report -->
                 <div class="border rounded-lg p-6">
                     <div class="flex justify-between items-center mb-4">
-                        <h3 class="text-xl font-semibold text-pink-600">Sara_Hana's Report</h3>
-                        <button onclick="downloadReport('saraHana')" class="bg-pink-600 text-white px-4 py-2 rounded-lg hover:bg-pink-700 transition duration-200 text-sm">Download Report</button>
+                        <h3 class="text-xl font-semibold text-pink-600" data-i18n="reports.saraHanaReport">Sara_Hana's Report</h3>
+                        <button onclick="downloadReport('saraHana')" class="bg-pink-600 text-white px-4 py-2 rounded-lg hover:bg-pink-700 transition duration-200 text-sm" data-i18n="reports.download">Download Report</button>
                     </div>
                     <div id="saraHanaReport" class="text-sm"></div>
                 </div>
@@ -245,8 +354,8 @@
             <!-- Combined Report -->
             <div class="mt-8 border rounded-lg p-6 bg-gray-50">
                 <div class="flex justify-between items-center mb-4">
-                    <h3 class="text-xl font-semibold text-gray-800">Combined Monthly Report</h3>
-                    <button onclick="downloadReport('combined')" class="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition duration-200 text-sm">Download Combined Report</button>
+                    <h3 class="text-xl font-semibold text-gray-800" data-i18n="reports.combined">Combined Monthly Report</h3>
+                    <button onclick="downloadReport('combined')" class="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition duration-200 text-sm" data-i18n="reports.downloadCombined">Download Combined Report</button>
                 </div>
                 <div id="combinedReport" class="text-sm"></div>
             </div>
