@@ -52,7 +52,7 @@
                 <h1 class="text-3xl font-bold text-gray-800">Student Class Management System</h1>
                 <div class="flex items-center space-x-4">
                     <div id="saveStatus" role="status" aria-live="polite" aria-atomic="true" class="text-sm font-medium"></div>
-                    <div class="flex items-center space-x-2" aria-label="System status: Database Active">
+                    <div class="flex items-center space-x-2" role="status" aria-label="System status: Database Active">
                         <span aria-hidden="true" class="w-2 h-2 bg-green-500 rounded-full"></span>
                         <span class="text-sm text-gray-600">
                             <span class="sr-only">Status: </span>Database Active
@@ -170,7 +170,7 @@
                         </div>
                     </div>
 
-                    <div id="kareemScheduleList" class="space-y-2" aria-label="Kareem's scheduled days" aria-live="polite"></div>
+                    <div id="kareemScheduleList" class="space-y-2" role="region" aria-label="Kareem's scheduled days" aria-live="polite"></div>
 
                     <button type="button" onclick="generateMonthlyClasses('kareem')" aria-label="Generate monthly classes for Kareem" class="w-full bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition duration-200">
                         Generate Classes
@@ -201,7 +201,7 @@
                         </div>
                     </div>
 
-                    <div id="saraHanaScheduleList" class="space-y-2" aria-label="Sara_Hana's scheduled days" aria-live="polite"></div>
+                    <div id="saraHanaScheduleList" class="space-y-2" role="region" aria-label="Sara_Hana's scheduled days" aria-live="polite"></div>
 
                     <button type="button" onclick="generateMonthlyClasses('saraHana')" aria-label="Generate monthly classes for Sara_Hana" class="w-full bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition duration-200">
                         Generate Classes
@@ -248,12 +248,12 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div>
                     <h3 class="text-xl font-semibold text-blue-600 mb-4">Kareem's Classes</h3>
-                    <div id="kareemClasses" class="space-y-2 max-h-96 overflow-y-auto" aria-live="polite" aria-label="Kareem's class list"></div>
+                    <div id="kareemClasses" class="space-y-2 max-h-96 overflow-y-auto" role="region" aria-live="polite" aria-label="Kareem's class list"></div>
                 </div>
 
                 <div>
                     <h3 class="text-xl font-semibold text-pink-600 mb-4">Sara_Hana's Classes</h3>
-                    <div id="saraHanaClasses" class="space-y-2 max-h-96 overflow-y-auto" aria-live="polite" aria-label="Sara_Hana's class list"></div>
+                    <div id="saraHanaClasses" class="space-y-2 max-h-96 overflow-y-auto" role="region" aria-live="polite" aria-label="Sara_Hana's class list"></div>
                 </div>
             </div>
         </section>
