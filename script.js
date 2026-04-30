@@ -610,7 +610,7 @@ class StudentClassManager {
         });
 
         report += `${t('reports.summary').toUpperCase()}\n${'='.repeat(20)}\n`;
-        report += `${t('monthlyOverview.totalClasses')} ${kareemClasses.length + saraHanaClasses.length}\n`;
+        report += `${t('reports.combinedTotalClasses')} ${kareemClasses.length + saraHanaClasses.length}\n`;
         report += `${t('monthlyOverview.totalRevenue')} $${grandTotal.toFixed(2)}\n\n`;
         report += `${'='.repeat(50)}\n`;
         report += `${t('reports.generatedOn')} ${new Date().toLocaleString(this.getDisplayLocale())}\n`;

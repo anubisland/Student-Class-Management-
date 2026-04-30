@@ -69,6 +69,70 @@ Object.defineProperty(window, 'localStorage', { value: localStorageMock });
 window.alert = jest.fn();
 
 // ---------------------------------------------------------------------------
+// i18n mock — returns English strings so tests remain readable
+// ---------------------------------------------------------------------------
+const en = {
+  'app.title': 'Student Class Management System',
+  'app.dbActive': 'Database Active',
+  'status.loading': 'Loading...', 'status.saved': '✓ Saved',
+  'status.saveFailed': '✗ Save Failed', 'status.dataLoaded': '✓ Data Loaded',
+  'priceSettings.title': 'Price Settings',
+  'priceSettings.kareemPrice': 'Kareem - Price per Class',
+  'priceSettings.saraHanaPrice': 'Sara_Hana - Price per Class',
+  'priceSettings.enterPrice': 'Enter price',
+  'monthlyOverview.title': 'Monthly Overview',
+  'monthlyOverview.selectMonth': 'Select Month:',
+  'monthlyOverview.classesThisMonth': 'Classes this month:',
+  'monthlyOverview.monthlyTotal': 'Monthly total:',
+  'monthlyOverview.totalClasses': 'Total Classes:',
+  'monthlyOverview.totalRevenue': 'Total Revenue:',
+  'schedules.title': 'Monthly Schedules',
+  'schedules.kareemSchedule': "Kareem's Schedule",
+  'schedules.saraHanaSchedule': "Sara_Hana's Schedule",
+  'schedules.addScheduleTitle': 'Add Schedule', 'schedules.selectDay': 'Select Day',
+  'schedules.monday': 'Monday', 'schedules.tuesday': 'Tuesday',
+  'schedules.wednesday': 'Wednesday', 'schedules.thursday': 'Thursday',
+  'schedules.friday': 'Friday', 'schedules.saturday': 'Saturday',
+  'schedules.sunday': 'Sunday',
+  'schedules.addScheduleBtn': 'Add Schedule', 'schedules.generateClasses': 'Generate Classes',
+  'schedules.noSchedules': 'No schedules set', 'schedules.remove': 'Remove', 'schedules.at': 'at',
+  'extraClasses.title': 'Add Extra Classes', 'extraClasses.addClass': 'Add Class',
+  'classDetails.title': 'Class Details',
+  'classDetails.kareemClasses': "Kareem's Classes",
+  'classDetails.saraHanaClasses': "Sara_Hana's Classes",
+  'classDetails.noClasses': 'No classes for this month',
+  'classDetails.delete': 'Delete', 'classDetails.at': 'at',
+  'reports.title': 'Monthly Reports',
+  'reports.kareemReport': "Kareem's Report", 'reports.saraHanaReport': "Sara_Hana's Report",
+  'reports.download': 'Download Report', 'reports.combined': 'Combined Monthly Report',
+  'reports.downloadCombined': 'Download Combined Report',
+  'reports.totalClasses': 'Total Classes:', 'reports.pricePerClass': 'Price per Class:',
+  'reports.totalAmount': 'Total Amount:', 'reports.classDetails': 'Class Details:',
+  'reports.combinedTotalClasses': 'Total Classes (Both Students):',
+  'reports.summary': 'Summary', 'reports.generatedOn': 'Report generated on:',
+  'reports.classes': 'Classes:', 'reports.total': 'Total:',
+  'student.kareem': 'Kareem', 'student.saraHana': 'Sara_Hana',
+  'alert.selectDayTime': 'Please select both day and time',
+  'alert.selectDateTime': 'Please select both date and time',
+  'alert.classExists': 'A class already exists for this date and time',
+  'alert.noSchedules': 'No schedules set for {student}',
+  'alert.generated': 'Generated {count} classes for {student} in {month}',
+  'lang.ariaLabel': 'Switch to Arabic / التحويل إلى العربية',
+};
+
+window.i18n = {
+  getCurrentLang: () => 'en',
+  t: (key, params) => {
+    let str = en[key] || key;
+    if (params) str = str.replace(/\{(\w+)\}/g, (_, k) => params[k] !== undefined ? params[k] : `{${k}}`);
+    return str;
+  },
+  setLanguage: jest.fn(),
+  render: jest.fn(),
+  init: jest.fn(),
+};
+
+// ---------------------------------------------------------------------------
 // Load the script — it defines StudentClassManager on the global scope
 // ---------------------------------------------------------------------------
 let StudentClassManager;
