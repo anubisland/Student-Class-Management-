@@ -96,3 +96,12 @@ jobs:
           draft: false
           prerelease: false
           files: artifacts/app-release.apk
+
+  notify:
+    name: release notification
+    needs: release
+    uses: anubisland/.github/.github/workflows/reusable-release-notify.yml@main
+    with:
+      release-tag: ${{ needs.release.outputs.tag }}
+      release-name: Student Class Management ${{ needs.release.outputs.tag }}
+    secrets: inherit
