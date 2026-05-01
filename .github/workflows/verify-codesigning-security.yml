@@ -1,0 +1,23 @@
+name: ANU-407 Code-Signing Security Audit
+
+on:
+  workflow_dispatch:
+
+jobs:
+  security-audit:
+    name: Run codesigning security verification
+    runs-on: [self-hosted, macOS, ios]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run verification script
+        run: bash scripts/verify-codesigning-security.sh 2>&1 | tee /tmp/anu407-audit.txt
+
+      - name: Upload audit report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: anu407-security-audit-${{ github.run_id }}
+          path: /tmp/anu407-audit.txt
+          retention-days: 30
