@@ -1,0 +1,77 @@
+name: iOS Build (Self-Hosted Runner – Proof of Build)
+
+on:
+  # Trigger manually to prove end-to-end pipeline
+  workflow_dispatch:
+  # Also run on pushes to main for ongoing verification
+  push:
+    branches: [main]
+    paths:
+      - 'mobile-app/ios/**'
+      - '.github/workflows/build-ios-self-hosted.yml'
+
+env:
+  SCHEME: StudentApp
+  WORKING_DIR: mobile-app/ios
+
+jobs:
+  build-ios-self-hosted:
+    name: iOS Build on Self-Hosted macOS Runner
+    # Targets the self-hosted runner registered via scripts/setup-github-runner.sh
+    runs-on: [self-hosted, macOS, ios]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Show runner environment
+        run: |
+          echo "=== Runner Info ==="
+          echo "Hostname:    $(hostname)"
+          echo "macOS:       $(sw_vers -productVersion)"
+          echo "Xcode:       $(xcodebuild -version | head -1)"
+          echo "Simulators:  $(xcrun simctl list devices available --json | python3 -c "import json,sys; d=json.load(sys.stdin); print(sum(len(v) for v in d['devices'].values()))" 2>/dev/null || echo 'n/a')"
+          echo "Architecture: $(uname -m)"
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: mobile-app/package-lock.json
+
+      - name: Install npm dependencies
+        working-directory: mobile-app
+        run: npm ci --prefer-offline
+
+      - name: Install CocoaPods dependencies
+        working-directory: ${{ env.WORKING_DIR }}
+        run: |
+          # Use bundle exec if Gemfile exists, otherwise fall back to system pod
+          if [ -f "../../Gemfile" ]; then
+            bundle exec pod install
+          else
+            pod install
+          fi
+
+      - name: Build iOS (simulator – no signing required)
+        working-directory: ${{ env.WORKING_DIR }}
+        run: |
+          set -o pipefail
+          xcodebuild build \
+            -workspace "${{ env.SCHEME }}.xcworkspace" \
+            -scheme "${{ env.SCHEME }}" \
+            -configuration Debug \
+            -sdk iphonesimulator \
+            -destination 'generic/platform=iOS Simulator' \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            | xcpretty --color 2>/dev/null || cat /dev/stdin
+
+      - name: Upload build log on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: xcodebuild-log
+          path: /tmp/xcodebuild.log
+          retention-days: 3
