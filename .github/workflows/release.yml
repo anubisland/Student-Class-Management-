@@ -56,6 +56,9 @@ jobs:
     name: Create GitHub Release
     needs: build-android
     runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.tag.outputs.tag }}
+      name: ${{ steps.tag.outputs.name }}
     steps:
       - name: Download APK artifact
         uses: actions/download-artifact@v4
@@ -94,7 +97,7 @@ jobs:
             Enable "Install from unknown sources" in device settings if prompted.
           generate_release_notes: true
           draft: false
-          prerelease: false
+          prerelease: ${{ github.ref_type != 'tag' }}
           files: artifacts/app-release.apk
 
   notify:
@@ -103,5 +106,5 @@ jobs:
     uses: anubisland/.github/.github/workflows/reusable-release-notify.yml@main
     with:
       release-tag: ${{ needs.release.outputs.tag }}
-      release-name: Student Class Management ${{ needs.release.outputs.tag }}
+      release-name: ${{ needs.release.outputs.name }}
     secrets: inherit
