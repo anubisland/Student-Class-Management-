@@ -183,4 +183,30 @@ This system includes all improvements from the Claude conversation:
 - ✅ Enhanced user interface
 - ✅ Comprehensive error handling
 
+---
+
+## CI/CD Pipelines
+
+[![Web App CI](https://github.com/anubisland/Student-Class-Management-/actions/workflows/web-app-ci.yml/badge.svg)](https://github.com/anubisland/Student-Class-Management-/actions/workflows/web-app-ci.yml)
+[![Build Android APK](https://github.com/anubisland/Student-Class-Management-/actions/workflows/build-android.yml/badge.svg)](https://github.com/anubisland/Student-Class-Management-/actions/workflows/build-android.yml)
+[![Release](https://github.com/anubisland/Student-Class-Management-/actions/workflows/release.yml/badge.svg)](https://github.com/anubisland/Student-Class-Management-/actions/workflows/release.yml)
+
+All pipelines run on GitHub Actions (`ubuntu-latest`).
+
+| Workflow | Trigger | What it does |
+|---|---|---|
+| `web-app-ci.yml` | Push / PR → `main`, `develop` (path-filtered: `script.js`, `index.html`, `__tests__/**`) | Jest tests with coverage report (artifact: `web-app-coverage`) |
+| `build-android.yml` | Push / PR → `main` | Android APK build → upload artifact (`app-release`) |
+| `build-ios.yml` | Push / PR → `main` | iOS build |
+| `test-coverage.yml` | Push / PR → `main`, `develop` (path-filtered: `mobile-app/**`) | Mobile test coverage, posts results to PR |
+| `deploy-staging.yml` | Push → `main` (path-filtered: `index.html`, `script.js`) | Deploy web app to GitHub Pages |
+| `release.yml` | Tag `v*.*.*` or manual dispatch | Android APK build → GitHub Release with APK attached |
+| `release-schedule.yml` | Scheduled (every 2 days) or manual dispatch | Automated release cadence |
+
+### Artifacts
+
+- **Android APK**: available as workflow artifact `app-release` on every push to `main`
+- **Web app coverage**: uploaded as `web-app-coverage` artifact (retained 14 days)
+- **GitHub Release**: created on tag `v*.*.*` push; download `app-release.apk` to install on Android (enable "Install from unknown sources" in device settings)
+
 Perfect for tutors, teachers, or anyone managing regular student classes with pricing and reporting needs!
