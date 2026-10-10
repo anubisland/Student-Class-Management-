@@ -6,9 +6,8 @@ import {
   StatusBar,
   Alert,
   Share,
-  PermissionsAndroid,
+  TouchableOpacity,
   Platform,
-  Linking,
 } from 'react-native';
 import {
   Provider as PaperProvider,
@@ -22,9 +21,10 @@ import {
   Portal,
   Modal,
   Surface,
+  IconButton,
+  Divider,
 } from 'react-native-paper';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import DateTimePicker from '@react-native-community/datetimepicker';
 
 const theme = {
   ...DefaultTheme,
@@ -33,52 +33,63 @@ const theme = {
     primary: '#3B82F6',
     secondary: '#EC4899',
     surface: '#FFFFFF',
-    background: '#F9FAFB',
+    background: '#F8FAFC',
   },
 };
 
 const StudentClassManagementApp = () => {
   // State management
-  const [prices, setPrices] = useState({ kareem: '25.00', saraHana: '30.00' });
-  const [classes, setClasses] = useState({ kareem: [], saraHana: [] });
-  const [schedules, setSchedules] = useState({ kareem: [], saraHana: [] });
+  const [settings, setSettings] = useState({ familyName: '', currency: 'EGP' });
+  const [children, setChildren] = useState([
+    { id: 'kareem', name: 'كريم (Kareem)', color: '#3B82F6' },
+    { id: 'saraHana', name: 'سارة هناء (Sara_Hana)', color: '#EC4899' },
+  ]);
+  const [activities, setActivities] = useState([
+    { id: 'act_1', childId: 'kareem', name: 'لغة إنجليزية', price: 50 },
+    { id: 'act_2', childId: 'saraHana', name: 'رياضيات', price: 50 },
+  ]);
+  const [classes, setClasses] = useState({});
+  const [schedules, setSchedules] = useState({});
   const [currentMonth, setCurrentMonth] = useState('');
   const [saveStatus, setSaveStatus] = useState('');
   const [loading, setLoading] = useState(true);
-  
+
   // Modal states
-  const [priceModalVisible, setPriceModalVisible] = useState(false);
+  const [childModalVisible, setChildModalVisible] = useState(false);
+  const [editingChildId, setEditingChildId] = useState(null);
+  const [childNameInput, setChildNameInput] = useState('');
+  const [childColorInput, setChildColorInput] = useState('#3B82F6');
+
+  const [activityModalVisible, setActivityModalVisible] = useState(false);
+  const [activityChildId, setActivityChildId] = useState('');
+  const [activityNameInput, setActivityNameInput] = useState('');
+  const [activityPriceInput, setActivityPriceInput] = useState('50');
+
   const [classModalVisible, setClassModalVisible] = useState(false);
   const [reportModalVisible, setReportModalVisible] = useState(false);
   const [scheduleModalVisible, setScheduleModalVisible] = useState(false);
-  
+  const [settingsModalVisible, setSettingsModalVisible] = useState(false);
+
   // Form states
   const [selectedStudent, setSelectedStudent] = useState('kareem');
+  const [selectedActivityId, setSelectedActivityId] = useState('');
   const [newClassDate, setNewClassDate] = useState(new Date());
   const [selectedDay, setSelectedDay] = useState('Monday');
-  const [selectedTime, setSelectedTime] = useState('10:00');
-  const [selectedClassTime, setSelectedClassTime] = useState('10:00');
-  const [selectedHour, setSelectedHour] = useState(10);
+  const [selectedHour, setSelectedHour] = useState(16);
   const [selectedMinute, setSelectedMinute] = useState(0);
-  const [selectedScheduleHour, setSelectedScheduleHour] = useState(10);
+  const [selectedScheduleHour, setSelectedScheduleHour] = useState(16);
   const [selectedScheduleMinute, setSelectedScheduleMinute] = useState(0);
-  const [showDatePicker, setShowDatePicker] = useState(false);
-  const [timeInputMode, setTimeInputMode] = useState('selector'); // 'selector' or 'input'
-  const [scheduleTimeInputMode, setScheduleTimeInputMode] = useState('selector');
-  const [timeInputText, setTimeInputText] = useState('10:00');
-  const [scheduleTimeInputText, setScheduleTimeInputText] = useState('10:00');
-  const [showQuickMinutes, setShowQuickMinutes] = useState(true);
+  const [calendarViewDate, setCalendarViewDate] = useState(new Date());
+  const [customPriceInput, setCustomPriceInput] = useState('');
 
-  const students = [
-    { key: 'kareem', name: 'Kareem', color: '#3B82F6' },
-    { key: 'saraHana', name: 'Sara_Hana', color: '#EC4899' }
-  ];
+  const [expandedClasses, setExpandedClasses] = useState({});
+
+  const toggleClassDetails = (studentId) => {
+    setExpandedClasses((prev) => ({ ...prev, [studentId]: !prev[studentId] }));
+  };
 
   const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-  const timeSlots = ['06:00', '07:00', '08:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00', '21:00', '22:00', '23:00'];
-  const hours = Array.from({length: 24}, (_, i) => i);
-  const minutes = Array.from({length: 60}, (_, i) => i);
-  const quickMinutes = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55];
+  const calendarDayLabels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
   // Initialize app
   useEffect(() => {
@@ -103,16 +114,7 @@ const StudentClassManagementApp = () => {
   // Database operations
   const saveToDatabase = async (key, data) => {
     try {
-      console.log(`[SAVE] Attempting to save key: ${key}`);
-      console.log(`[SAVE] Data to save:`, JSON.stringify(data, null, 2));
-      
-      const dataString = JSON.stringify(data);
-      await AsyncStorage.setItem(key, dataString);
-      
-      // Verify save by reading back
-      const savedData = await AsyncStorage.getItem(key);
-      console.log(`[SAVE] Successfully saved and verified ${key}`);
-      
+      await AsyncStorage.setItem(key, JSON.stringify(data));
       setSaveStatus('✓ Saved');
       setTimeout(() => setSaveStatus(''), 2000);
       return true;
@@ -124,7 +126,7 @@ const StudentClassManagementApp = () => {
     }
   };
 
-  const loadFromDatabase = async (key, defaultValue = {}) => {
+  const loadFromDatabase = async (key, defaultValue = null) => {
     try {
       const data = await AsyncStorage.getItem(key);
       return data ? JSON.parse(data) : defaultValue;
@@ -135,24 +137,65 @@ const StudentClassManagementApp = () => {
   };
 
   const loadData = async () => {
-    const loadedPrices = await loadFromDatabase('student-prices', {
-      kareem: '25.00',
-      saraHana: '30.00'
-    });
-    
-    const loadedClasses = await loadFromDatabase('student-classes', {
-      kareem: [],
-      saraHana: []
-    });
+    const savedChildren = await loadFromDatabase('family_children', null);
+    const savedActivities = await loadFromDatabase('family_activities', null);
+    const savedSettings = await loadFromDatabase('family_settings', null);
+    const savedClasses = await loadFromDatabase('family_classes', null);
+    const savedSchedules = await loadFromDatabase('family_schedules', null);
 
-    const loadedSchedules = await loadFromDatabase('student-schedules', {
-      kareem: [],
-      saraHana: []
-    });
+    if (savedChildren && Array.isArray(savedChildren) && savedChildren.length > 0) {
+      setSettings(savedSettings || { familyName: '', currency: 'EGP' });
+      setChildren(savedChildren);
+      setActivities(savedActivities || []);
+      setClasses(savedClasses || {});
+      setSchedules(savedSchedules || {});
+      setSelectedStudent(savedChildren[0].id);
+    } else {
+      // Check for legacy data
+      const legacyPrices = await loadFromDatabase('student-prices', null);
+      const legacyClasses = await loadFromDatabase('student-classes', null);
+      const legacySchedules = await loadFromDatabase('student-schedules', null);
 
-    setPrices(loadedPrices);
-    setClasses(loadedClasses);
-    setSchedules(loadedSchedules);
+      if (legacyPrices || legacyClasses || legacySchedules) {
+        const initialChildren = [
+          { id: 'kareem', name: 'كريم (Kareem)', color: '#3B82F6' },
+          { id: 'saraHana', name: 'سارة هناء (Sara_Hana)', color: '#EC4899' },
+        ];
+        const kPrice = legacyPrices?.kareem ? parseFloat(legacyPrices.kareem) : 25;
+        const sPrice = legacyPrices?.saraHana ? parseFloat(legacyPrices.saraHana) : 30;
+
+        const initialActs = [
+          { id: 'act_k', childId: 'kareem', name: 'General Classes', price: kPrice },
+          { id: 'act_s', childId: 'saraHana', name: 'General Classes', price: sPrice },
+        ];
+
+        setChildren(initialChildren);
+        setActivities(initialActs);
+        setClasses(legacyClasses || {});
+        setSchedules(legacySchedules || {});
+
+        await saveToDatabase('family_children', initialChildren);
+        await saveToDatabase('family_activities', initialActs);
+        await saveToDatabase('family_classes', legacyClasses || {});
+        await saveToDatabase('family_schedules', legacySchedules || {});
+      } else {
+        // Defaults
+        const defChildren = [
+          { id: 'kareem', name: 'كريم (Kareem)', color: '#3B82F6' },
+          { id: 'saraHana', name: 'سارة هناء (Sara_Hana)', color: '#EC4899' },
+        ];
+        setChildren(defChildren);
+        setSelectedStudent('kareem');
+      }
+    }
+  };
+
+  const persistAll = async (newChildren, newActs, newClasses, newSchedules, newSettings) => {
+    if (newChildren) await saveToDatabase('family_children', newChildren);
+    if (newActs) await saveToDatabase('family_activities', newActs);
+    if (newClasses) await saveToDatabase('family_classes', newClasses);
+    if (newSchedules) await saveToDatabase('family_schedules', newSchedules);
+    if (newSettings) await saveToDatabase('family_settings', newSettings);
   };
 
   // Date helpers
@@ -164,12 +207,10 @@ const StudentClassManagementApp = () => {
   };
 
   const getMonthName = (monthString) => {
+    if (!monthString) return '';
     const [year, month] = monthString.split('-');
     const date = new Date(parseInt(year), parseInt(month) - 1, 1);
-    return date.toLocaleDateString('en-US', { 
-      month: 'long', 
-      year: 'numeric' 
-    });
+    return date.toLocaleDateString('ar-EG', { month: 'long', year: 'numeric' });
   };
 
   const setCurrentMonthToNow = () => {
@@ -186,13 +227,6 @@ const StudentClassManagementApp = () => {
     setCurrentMonth(newMonthString);
   };
 
-  const onDateChange = (event, selectedDate) => {
-    setShowDatePicker(false);
-    if (selectedDate) {
-      setNewClassDate(selectedDate);
-    }
-  };
-
   const getFormattedTime = () => {
     const hourStr = String(selectedHour).padStart(2, '0');
     const minStr = String(selectedMinute).padStart(2, '0');
@@ -205,1002 +239,564 @@ const StudentClassManagementApp = () => {
     return `${hourStr}:${minStr}`;
   };
 
-  // Schedule management
-  const addSchedule = () => {
-    console.log('=== ADD SCHEDULE BUTTON PRESSED ===');
-    console.log('selectedStudent:', selectedStudent);
-    console.log('selectedDay:', selectedDay);
-    console.log('selectedScheduleHour:', selectedScheduleHour);
-    console.log('selectedScheduleMinute:', selectedScheduleMinute);
-    
-    // Get student name for display
-    const studentName = students.find(s => s.key === selectedStudent)?.name;
-    console.log('studentName:', studentName);
-    
-    // Format the time
-    const formattedTime = getFormattedScheduleTime();
-    console.log('formattedTime:', formattedTime);
-    
-    // Create the new schedule object
+  const formatMoney = (amount) => {
+    const curr = settings?.currency || 'EGP';
+    return `${Number(amount || 0).toFixed(2)} ${curr}`;
+  };
+
+  // Children & Activities helpers
+  const getChildById = (id) => children.find((c) => c.id === id);
+  const getChildActivities = (childId) => activities.filter((a) => a.childId === childId);
+  const getActivityById = (id) => activities.find((a) => a.id === id);
+
+  const getChildDefaultPrice = (childId) => {
+    const childActs = getChildActivities(childId);
+    return childActs.length > 0 ? childActs[0].price : 50;
+  };
+
+  // Add / Edit Child
+  const saveChild = async () => {
+    if (!childNameInput.trim()) {
+      Alert.alert('تنبيه', 'يرجى إدخال اسم الابن/الابنة');
+      return;
+    }
+
+    let updated;
+    if (editingChildId) {
+      updated = children.map((c) =>
+        c.id === editingChildId ? { ...c, name: childNameInput.trim(), color: childColorInput } : c
+      );
+    } else {
+      const newId = 'child_' + Date.now();
+      const newChild = { id: newId, name: childNameInput.trim(), color: childColorInput };
+      updated = [...children, newChild];
+
+      // Default activity
+      const newAct = { id: 'act_' + Date.now(), childId: newId, name: 'دروس عامة', price: 50 };
+      const updatedActs = [...activities, newAct];
+      setActivities(updatedActs);
+      await saveToDatabase('family_activities', updatedActs);
+    }
+
+    setChildren(updated);
+    await saveToDatabase('family_children', updated);
+    setChildModalVisible(false);
+    setEditingChildId(null);
+    setChildNameInput('');
+  };
+
+  const deleteChild = (childId) => {
+    Alert.alert('تأكيد الحذف', 'هل أنت متأكد من حذف هذا الابن وجميع بياناته؟', [
+      { text: 'إلغاء', style: 'cancel' },
+      {
+        text: 'حذف',
+        style: 'destructive',
+        onPress: async () => {
+          const updatedChildren = children.filter((c) => c.id !== childId);
+          const updatedActs = activities.filter((a) => a.childId !== childId);
+          const updatedClasses = { ...classes };
+          delete updatedClasses[childId];
+          const updatedSchedules = { ...schedules };
+          delete updatedSchedules[childId];
+
+          setChildren(updatedChildren);
+          setActivities(updatedActs);
+          setClasses(updatedClasses);
+          setSchedules(updatedSchedules);
+
+          await persistAll(updatedChildren, updatedActs, updatedClasses, updatedSchedules, null);
+        },
+      },
+    ]);
+  };
+
+  // Add Activity
+  const saveActivity = async () => {
+    if (!activityNameInput.trim() || isNaN(parseFloat(activityPriceInput))) {
+      Alert.alert('تنبيه', 'يرجى إدخال اسم النشاط وسعر صحيح');
+      return;
+    }
+
+    const newAct = {
+      id: 'act_' + Date.now(),
+      childId: activityChildId || selectedStudent,
+      name: activityNameInput.trim(),
+      price: parseFloat(activityPriceInput),
+    };
+
+    const updated = [...activities, newAct];
+    setActivities(updated);
+    await saveToDatabase('family_activities', updated);
+    setActivityModalVisible(false);
+    setActivityNameInput('');
+    setActivityPriceInput('50');
+  };
+
+  const deleteActivity = async (actId) => {
+    const updated = activities.filter((a) => a.id !== actId);
+    setActivities(updated);
+    await saveToDatabase('family_activities', updated);
+  };
+
+  // Schedule Management
+  const addSchedule = async () => {
+    const childActs = getChildActivities(selectedStudent);
+    const actId = selectedActivityId || (childActs.length > 0 ? childActs[0].id : '');
+
     const newSchedule = {
       id: Date.now(),
+      childId: selectedStudent,
+      activityId: actId,
       day: selectedDay,
-      time: formattedTime,
-      student: selectedStudent
+      time: getFormattedScheduleTime(),
     };
-    
-    console.log('newSchedule created:', newSchedule);
-    
-    // Get current schedules from state
+
     const currentSchedules = { ...schedules };
-    console.log('currentSchedules before:', currentSchedules);
-    
-    // Initialize array if it doesn't exist
     if (!currentSchedules[selectedStudent]) {
       currentSchedules[selectedStudent] = [];
     }
-    
-    // Add the new schedule
     currentSchedules[selectedStudent].push(newSchedule);
-    console.log('currentSchedules after adding:', currentSchedules);
-    
-    // Update state immediately
+
     setSchedules(currentSchedules);
-    console.log('State updated with setSchedules');
-    
-    // Save to AsyncStorage
-    AsyncStorage.setItem('student-schedules', JSON.stringify(currentSchedules))
-      .then(() => {
-        console.log('Successfully saved to AsyncStorage');
-        setScheduleModalVisible(false);
-        Alert.alert(
-          'Schedule Added!',
-          `${studentName}: ${selectedDay} at ${formattedTime}`
-        );
-      })
-      .catch((error) => {
-        console.error('Failed to save to AsyncStorage:', error);
-        Alert.alert('Error', 'Failed to save schedule');
-      });
+    await saveToDatabase('family_schedules', currentSchedules);
+    setScheduleModalVisible(false);
   };
 
-  const debugSchedules = () => {
-    console.log('=== DEBUG SCHEDULES ===');
-    console.log('Current schedules state:', schedules);
-    AsyncStorage.getItem('student-schedules')
-      .then(data => {
-        console.log('Schedules in AsyncStorage:', data ? JSON.parse(data) : 'null');
-      })
-      .catch(error => {
-        console.error('Error reading from AsyncStorage:', error);
-      });
-  };
-
-  const generateClassesForStudent = async (studentKey) => {
-    try {
-      console.log('=== Generating classes for student:', studentKey);
-      console.log('Current schedules:', schedules);
-      console.log('Student schedules:', schedules[studentKey]);
-      console.log('Current month:', currentMonth);
-      
-      // Validate current month
-      if (!currentMonth) {
-        Alert.alert('Error', 'Please navigate to a month first');
-        return;
-      }
-      
-      // Get student schedules
-      const studentSchedules = schedules[studentKey] || [];
-      console.log('Found', studentSchedules.length, 'schedules for', studentKey);
-      
-      if (studentSchedules.length === 0) {
-        const studentName = students.find(s => s.key === studentKey)?.name;
-        Alert.alert('No Schedules', `Please add schedules for ${studentName} first using the "Add Schedule" button.`);
-        return;
-      }
-      
-      // Parse current month
-      const [year, month] = currentMonth.split('-');
-      const yearInt = parseInt(year);
-      const monthInt = parseInt(month);
-      const daysInMonth = new Date(yearInt, monthInt, 0).getDate();
-      
-      console.log(`Processing ${getMonthName(currentMonth)} - ${daysInMonth} days`);
-      
-      // Generate classes
-      let totalGenerated = 0;
-      const updatedClasses = { ...classes };
-      if (!updatedClasses[studentKey]) {
-        updatedClasses[studentKey] = [];
-      }
-      
-      // Process each schedule
-      studentSchedules.forEach((schedule, scheduleIndex) => {
-        console.log(`Processing schedule ${scheduleIndex + 1}:`, schedule);
-        
-        // Check each day in the month
-        for (let day = 1; day <= daysInMonth; day++) {
-          const checkDate = new Date(yearInt, monthInt - 1, day);
-          const dayOfWeek = checkDate.toLocaleDateString('en-US', { weekday: 'long' });
-          
-          if (dayOfWeek === schedule.day) {
-            const dateString = formatDate(checkDate);
-            console.log(`Found ${schedule.day} on ${dateString}`);
-            
-            // Check if class already exists
-            const existingClass = updatedClasses[studentKey].find(
-              cls => cls.date === dateString && cls.time === schedule.time
-            );
-            
-            if (!existingClass) {
-              const newClass = {
-                id: `class_${studentKey}_${dateString}_${schedule.time}_${Date.now()}_${Math.random().toString(36).substring(2)}`,
-                date: dateString,
-                time: schedule.time,
-                student: studentKey,
-                timestamp: new Date().toISOString(),
-                generated: true
-              };
-              
-              updatedClasses[studentKey].push(newClass);
-              totalGenerated++;
-              console.log('Generated class:', newClass);
-            } else {
-              console.log('Class already exists for', dateString, schedule.time);
-            }
-          }
-        }
-      });
-      
-      console.log(`Total classes generated: ${totalGenerated}`);
-      
-      // Save to state and database
-      setClasses(updatedClasses);
-      const saveResult = await saveToDatabase('student-classes', updatedClasses);
-      
-      if (saveResult) {
-        const studentName = students.find(s => s.key === studentKey)?.name;
-        if (totalGenerated > 0) {
-          Alert.alert('Success!', `Generated ${totalGenerated} classes for ${studentName} in ${getMonthName(currentMonth)}`);
-        } else {
-          Alert.alert('Info', `No new classes to generate for ${studentName}. All scheduled classes already exist.`);
-        }
-      } else {
-        Alert.alert('Error', 'Failed to save classes to database');
-      }
-      
-    } catch (error) {
-      console.error('Generate classes error:', error);
-      Alert.alert('Error', `Failed to generate classes: ${error.message}`);
+  const removeSchedule = async (studentId, scheduleId) => {
+    const currentSchedules = { ...schedules };
+    if (currentSchedules[studentId]) {
+      currentSchedules[studentId] = currentSchedules[studentId].filter((s) => s.id !== scheduleId);
+      setSchedules(currentSchedules);
+      await saveToDatabase('family_schedules', currentSchedules);
     }
   };
 
-  const generateClasses = async () => {
-    try {
-      console.log('Current schedules:', schedules);
-      console.log('Current month:', currentMonth);
-      
-      // Validate inputs
-      if (!currentMonth) {
-        Alert.alert('Error', 'Please select a month first');
-        return;
-      }
-      
-      const hasSchedules = Object.values(schedules).some(arr => arr && arr.length > 0);
-      if (!hasSchedules) {
-        Alert.alert('No Schedules', 'Please add schedules first before generating classes');
-        return;
-      }
-      
-      const [year, month] = currentMonth.split('-');
-      const daysInMonth = new Date(parseInt(year), parseInt(month), 0).getDate();
-      console.log('Days in month:', daysInMonth, 'for', year, month);
-      
-      const generatedClasses = { ...classes };
-      let totalGenerated = 0;
-
-      // Generate classes for each student based on their schedules
-      Object.keys(schedules).forEach(studentKey => {
-        const studentSchedules = schedules[studentKey] || [];
-        console.log(`Processing ${studentKey} schedules:`, studentSchedules);
-        
-        studentSchedules.forEach(schedule => {
-          console.log(`Processing schedule:`, schedule);
-          
-          // Find all dates in the month that match this day of the week
-          for (let day = 1; day <= daysInMonth; day++) {
-            const date = new Date(parseInt(year), parseInt(month) - 1, day);
-            const dayName = date.toLocaleDateString('en-US', { weekday: 'long' });
-            
-            if (dayName === schedule.day) {
-              const dateString = formatDate(date);
-              console.log(`Found matching day: ${dateString} (${dayName})`);
-              
-              // Check if class already exists for this date/time
-              const existingClass = generatedClasses[studentKey]?.find(
-                cls => cls.date === dateString && cls.time === schedule.time
-              );
-              
-              if (!existingClass) {
-                const newClass = {
-                  id: `generated_${studentKey}_${dateString}_${schedule.time}_${Date.now()}_${Math.random()}`,
-                  date: dateString,
-                  time: schedule.time,
-                  timestamp: new Date().toISOString(),
-                  generated: true,
-                  student: studentKey
-                };
-                
-                if (!generatedClasses[studentKey]) {
-                  generatedClasses[studentKey] = [];
-                }
-                generatedClasses[studentKey].push(newClass);
-                totalGenerated++;
-                console.log('Generated class:', newClass);
-              } else {
-                console.log('Class already exists for', dateString, schedule.time);
-              }
-            }
-          }
-        });
-      });
-
-      console.log('Total generated:', totalGenerated);
-      console.log('Final classes:', generatedClasses);
-
-      setClasses(generatedClasses);
-      const saved = await saveToDatabase('student-classes', generatedClasses);
-      
-      if (saved) {
-        if (totalGenerated > 0) {
-          Alert.alert('Success', `Generated ${totalGenerated} classes for ${getMonthName(currentMonth)}!`);
-        } else {
-          Alert.alert('Info', 'No new classes to generate. All scheduled classes already exist.');
-        }
-      } else {
-        throw new Error('Failed to save classes to database');
-      }
-    } catch (error) {
-      console.error('Generate classes error:', error);
-      Alert.alert('Error', 'Failed to generate classes: ' + error.message);
-    }
-  };
-
-  // Class management
+  // Classes & Sessions
   const addClass = async () => {
-    const dateString = formatDate(newClassDate);
-    const timeString = getFormattedTime();
+    const dateStr = formatDate(newClassDate);
+    const timeStr = getFormattedTime();
+
+    const currentClasses = { ...classes };
+    if (!currentClasses[selectedStudent]) {
+      currentClasses[selectedStudent] = [];
+    }
+
+    const exists = currentClasses[selectedStudent].some((c) => c.date === dateStr && c.time === timeStr);
+    if (exists) {
+      Alert.alert('تنبيه', 'توجد حصة بالفعل في نفس التاريخ والوقت لهذا الابن');
+      return;
+    }
+
+    const childActs = getChildActivities(selectedStudent);
+    const actId = selectedActivityId || (childActs.length > 0 ? childActs[0].id : '');
+    const act = getActivityById(actId);
+    const price = customPriceInput ? parseFloat(customPriceInput) : act ? act.price : getChildDefaultPrice(selectedStudent);
 
     const newClass = {
       id: Date.now(),
-      date: dateString,
-      time: timeString,
-      timestamp: new Date().toISOString()
+      childId: selectedStudent,
+      activityId: actId,
+      date: dateStr,
+      time: timeStr,
+      price: price,
+      status: 'completed',
     };
 
-    const updatedClasses = {
-      ...classes,
-      [selectedStudent]: [...(classes[selectedStudent] || []), newClass]
-    };
-
-    setClasses(updatedClasses);
-    await saveToDatabase('student-classes', updatedClasses);
-
-    setNewClassDate(new Date());
-    setSelectedHour(10);
-    setSelectedMinute(0);
+    currentClasses[selectedStudent].push(newClass);
+    setClasses(currentClasses);
+    await saveToDatabase('family_classes', currentClasses);
     setClassModalVisible(false);
-    Alert.alert('Success', 'Class added successfully!');
+    setCustomPriceInput('');
   };
 
-  // Report generation
-  const generateReport = async (type) => {
-    const monthName = getMonthName(currentMonth);
-    let reportText = `Student Class Management Report\n${monthName}\n\n`;
-    
-    if (type === 'combined') {
-      reportText += 'Combined Report\n';
-      reportText += `Kareem: ${getMonthlyClasses('kareem', currentMonth).length} classes\n`;
-      reportText += `Sara_Hana: ${getMonthlyClasses('saraHana', currentMonth).length} classes\n`;
-    } else {
-      const student = students.find(s => s.key === type);
-      const monthlyClasses = getMonthlyClasses(type, currentMonth);
-      const studentPrice = parseFloat(prices[type]) || 0;
-      const total = monthlyClasses.length * studentPrice;
-      
-      reportText += `${student?.name} Report\n`;
-      reportText += `Total Classes: ${monthlyClasses.length}\n`;
-      reportText += `Price per Class: $${studentPrice.toFixed(2)}\n`;
-      reportText += `Total Amount: $${total.toFixed(2)}\n`;
-    }
-
-    try {
-      await Share.share({
-        message: reportText,
-        title: `${monthName} Report`,
-      });
-    } catch (error) {
-      console.error('Share error:', error);
-      Alert.alert('Error', 'Failed to share report');
+  const removeClass = async (studentId, classId) => {
+    const currentClasses = { ...classes };
+    if (currentClasses[studentId]) {
+      currentClasses[studentId] = currentClasses[studentId].filter((c) => c.id !== classId);
+      setClasses(currentClasses);
+      await saveToDatabase('family_classes', currentClasses);
     }
   };
 
-  const downloadReport = async (type) => {
-    const monthName = getMonthName(currentMonth);
-    let reportContent = `Student Class Management Report\n${monthName}\n${'='.repeat(50)}\n\n`;
-    let fileName = '';
-    
-    if (type === 'combined') {
-      const kareemClasses = getMonthlyClasses('kareem', currentMonth);
-      const saraHanaClasses = getMonthlyClasses('saraHana', currentMonth);
-      const kareemPrice = parseFloat(prices.kareem) || 0;
-      const saraHanaPrice = parseFloat(prices.saraHana) || 0;
-      const kareemTotal = kareemClasses.length * kareemPrice;
-      const saraHanaTotal = saraHanaClasses.length * saraHanaPrice;
-      const grandTotal = kareemTotal + saraHanaTotal;
-      
-      fileName = `Combined_Report_${monthName.replace(' ', '_')}.txt`;
-      reportContent += `COMBINED MONTHLY REPORT\n\n`;
-      reportContent += `Kareem:\n`;
-      reportContent += `  Classes: ${kareemClasses.length}\n`;
-      reportContent += `  Price per Class: $${kareemPrice.toFixed(2)}\n`;
-      reportContent += `  Total: $${kareemTotal.toFixed(2)}\n\n`;
-      reportContent += `Sara_Hana:\n`;
-      reportContent += `  Classes: ${saraHanaClasses.length}\n`;
-      reportContent += `  Price per Class: $${saraHanaPrice.toFixed(2)}\n`;
-      reportContent += `  Total: $${saraHanaTotal.toFixed(2)}\n\n`;
-      reportContent += `${'='.repeat(30)}\n`;
-      reportContent += `GRAND TOTAL: $${grandTotal.toFixed(2)}\n`;
-    } else {
-      const student = students.find(s => s.key === type);
-      const monthlyClasses = getMonthlyClasses(type, currentMonth);
-      const studentPrice = parseFloat(prices[type]) || 0;
-      const total = monthlyClasses.length * studentPrice;
-      
-      fileName = `${student?.name}_Report_${monthName.replace(' ', '_')}.txt`;
-      reportContent += `${student?.name.toUpperCase()} REPORT\n\n`;
-      reportContent += `Total Classes: ${monthlyClasses.length}\n`;
-      reportContent += `Price per Class: $${studentPrice.toFixed(2)}\n`;
-      reportContent += `Total Amount: $${total.toFixed(2)}\n\n`;
-      
-      if (monthlyClasses.length > 0) {
-        reportContent += `CLASS DETAILS:\n`;
-        reportContent += `${'='.repeat(30)}\n`;
-        monthlyClasses.forEach((cls, index) => {
-          reportContent += `${index + 1}. ${cls.date} at ${cls.time}\n`;
-        });
-      }
+  const generateMonthlyClasses = async (studentId) => {
+    const studentSchedules = schedules[studentId] || [];
+    const child = getChildById(studentId);
+    const childName = child ? child.name : studentId;
+
+    if (studentSchedules.length === 0) {
+      Alert.alert('تنبيه', `لا توجد مواعيد أسبوعية مسجلة لـ ${childName}`);
+      return;
     }
-    
-    reportContent += `\n\nGenerated on: ${new Date().toLocaleString()}\n`;
-    reportContent += `Student Class Management App v1.0\n`;
 
-    try {
-      // Create a data URI with the report content
-      const dataUri = `data:text/plain;charset=utf-8,${encodeURIComponent(reportContent)}`;
-      
-      // Create a temporary link and trigger download
-      const link = document.createElement('a');
-      link.href = dataUri;
-      link.download = fileName;
-      
-      // For mobile devices, we'll use the Share API with the content
-      if (Platform.OS === 'android' || Platform.OS === 'ios') {
-        await Share.share({
-          message: reportContent,
-          title: `Download ${fileName}`,
-        });
-        Alert.alert('Report Ready', `${fileName} is ready to save. Use the share options to save to your device.`);
-      } else {
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        Alert.alert('Success', `${fileName} has been downloaded!`);
-      }
-    } catch (error) {
-      console.error('Download error:', error);
-      Alert.alert('Error', 'Failed to download report');
-    }
-  };
+    const [year, month] = currentMonth.split('-');
+    const startDate = new Date(parseInt(year), parseInt(month) - 1, 1);
+    const endDate = new Date(parseInt(year), parseInt(month), 0);
 
-  // Helper functions
-  const getMonthlyClasses = (student, month) => {
-    if (!classes[student]) return [];
-    
-    return classes[student]
-      .filter((cls) => cls.date.startsWith(month))
-      .sort((a, b) => {
-        const dateA = new Date(a.date + 'T' + a.time);
-        const dateB = new Date(b.date + 'T' + b.time);
-        return dateB.getTime() - dateA.getTime();
-      });
-  };
-
-  const getAvailableMonths = () => {
-    const months = new Set();
-    
-    // Add current month and next 11 months (12 months total)
-    const now = new Date();
-    for (let i = 0; i < 12; i++) {
-      const date = new Date(now.getFullYear(), now.getMonth() + i, 1);
-      const monthString = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-      months.add(monthString);
-    }
-    
-    // Add months from existing classes
-    Object.values(classes).forEach(studentClasses => {
-      studentClasses.forEach(cls => {
-        const monthString = cls.date.substring(0, 7); // YYYY-MM format
-        months.add(monthString);
-      });
-    });
-    
-    return Array.from(months).sort((a, b) => a.localeCompare(b)); // Chronological order (current first)
-  };
-
-  const getStudentStats = (student, month) => {
-    const monthlyClasses = getMonthlyClasses(student, month);
-    const studentPrice = parseFloat(prices[student]) || 0;
-    const total = monthlyClasses.length * studentPrice;
-    
-    return {
-      classCount: monthlyClasses.length,
-      total: total,
-      classes: monthlyClasses
+    const dayMap = {
+      Sunday: 0,
+      Monday: 1,
+      Tuesday: 2,
+      Wednesday: 3,
+      Thursday: 4,
+      Friday: 5,
+      Saturday: 6,
     };
+
+    let generatedCount = 0;
+    const currentClasses = { ...classes };
+    if (!currentClasses[studentId]) currentClasses[studentId] = [];
+
+    for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+      const dayOfWeek = d.getDay();
+      studentSchedules.forEach((sch) => {
+        if (dayMap[sch.day] === dayOfWeek) {
+          const dateStr = formatDate(d);
+          const exists = currentClasses[studentId].some((c) => c.date === dateStr && c.time === sch.time);
+          if (!exists) {
+            const act = getActivityById(sch.activityId);
+            const price = act ? act.price : getChildDefaultPrice(studentId);
+            currentClasses[studentId].push({
+              id: Date.now() + Math.random(),
+              childId: studentId,
+              activityId: sch.activityId,
+              date: dateStr,
+              time: sch.time,
+              price: price,
+              status: 'completed',
+            });
+            generatedCount++;
+          }
+        }
+      });
+    }
+
+    setClasses(currentClasses);
+    await saveToDatabase('family_classes', currentClasses);
+    Alert.alert('تم بنجاح', `تم توليد ${generatedCount} حصة لـ ${childName} في شهر ${getMonthName(currentMonth)}`);
   };
 
-  const updatePrice = async (student, value) => {
-    const updatedPrices = { ...prices, [student]: value };
-    setPrices(updatedPrices);
-    await saveToDatabase('student-prices', updatedPrices);
+  const getMonthlyClasses = (studentId) => {
+    if (!classes[studentId]) return [];
+    return classes[studentId]
+      .filter((c) => c.date && c.date.startsWith(currentMonth))
+      .sort((a, b) => new Date(b.date + 'T' + (b.time || '00:00')) - new Date(a.date + 'T' + (a.time || '00:00')));
   };
 
-  // Calculate totals
-  const kareemStats = getStudentStats('kareem', currentMonth);
-  const saraHanaStats = getStudentStats('saraHana', currentMonth);
-  const totalClasses = kareemStats.classCount + saraHanaStats.classCount;
-  const totalRevenue = kareemStats.total + saraHanaStats.total;
+  const getStudentMonthlyTotal = (studentId) => {
+    const list = getMonthlyClasses(studentId);
+    return list.reduce((sum, c) => sum + (c.price || getChildDefaultPrice(studentId)), 0);
+  };
 
-  if (loading) {
-    return (
-      <PaperProvider theme={theme}>
-        <View style={styles.loadingContainer}>
-          <Text>Loading...</Text>
-        </View>
-      </PaperProvider>
-    );
-  }
+  const getTotalMonthlyClassesCount = () => {
+    return children.reduce((sum, child) => sum + getMonthlyClasses(child.id).length, 0);
+  };
+
+  const getTotalMonthlyRevenue = () => {
+    return children.reduce((sum, child) => sum + getStudentMonthlyTotal(child.id), 0);
+  };
+
+  // Share report via WhatsApp or system share sheet
+  const shareMonthlyReport = async (studentId = null) => {
+    let text = `📅 تقرير الحصص والأنشطة - ${getMonthName(currentMonth)}\n`;
+    if (settings.familyName) text += `🏠 ${settings.familyName}\n`;
+    text += `===================================\n\n`;
+
+    const targetChildren = studentId ? children.filter((c) => c.id === studentId) : children;
+
+    targetChildren.forEach((child) => {
+      const list = getMonthlyClasses(child.id);
+      const total = getStudentMonthlyTotal(child.id);
+      text += `👤 ${child.name}\n`;
+      text += `إجمالي الحصص: ${list.length}\n`;
+      text += `المجموع: ${formatMoney(total)}\n`;
+      if (list.length > 0) {
+        list.forEach((c, idx) => {
+          const act = getActivityById(c.activityId);
+          const actName = act ? `[${act.name}] ` : '';
+          text += `  ${idx + 1}. ${c.date} @ ${c.time} ${actName}(${formatMoney(c.price)})\n`;
+        });
+      }
+      text += `-----------------------------------\n\n`;
+    });
+
+    if (!studentId) {
+      text += `📊 المجموع الكلي للأسرة: ${formatMoney(getTotalMonthlyRevenue())} (${getTotalMonthlyClassesCount()} حصة)\n`;
+    }
+
+    try {
+      await Share.share({ message: text, title: 'تقرير المصاريف والحصص الشهرية' });
+    } catch (e) {
+      console.error(e);
+    }
+  };
 
   return (
     <PaperProvider theme={theme}>
-      <StatusBar barStyle="dark-content" backgroundColor={theme.colors.background} />
-      
-      <Appbar.Header>
-        <Appbar.Content title="Student Class Management" />
+      <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
+      <Appbar.Header style={styles.header}>
+        <Appbar.Content
+          title={settings.familyName || 'إدارة حصص وأنشطة الأسرة'}
+          subtitle={saveStatus || 'Student & Activity Manager'}
+          titleStyle={styles.headerTitle}
+        />
+        <IconButton icon="account-plus" onPress={() => { setEditingChildId(null); setChildNameInput(''); setChildModalVisible(true); }} />
+        <IconButton icon="share-variant" onPress={() => shareMonthlyReport()} />
       </Appbar.Header>
 
-      <ScrollView style={styles.container}>
-        {/* Status */}
-        {saveStatus ? (
-          <Surface style={styles.statusCard}>
-            <Text style={[
-              styles.statusText,
-              { color: saveStatus.includes('✓') ? '#10B981' : 
-                       saveStatus.includes('✗') ? '#EF4444' : '#F59E0B' }
-            ]}>
-              {saveStatus}
-            </Text>
-          </Surface>
-        ) : null}
-
-        {/* Monthly Overview */}
+      <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
+        {/* Month Selector Card */}
         <Card style={styles.card}>
-          <Card.Title title="Monthly Overview" />
           <Card.Content>
-            <View style={styles.monthNavigationContainer}>
-              <Button 
-                mode="contained" 
-                onPress={() => navigateMonth(-1)}
-                style={styles.navButton}
-                compact
-              >
-                {"< Prev"}
-              </Button>
-              
-              <Text variant="headlineMedium" style={styles.currentMonthDisplay}>
-                {getMonthName(currentMonth)}
-              </Text>
-              
-              <Button 
-                mode="contained" 
-                onPress={() => navigateMonth(1)}
-                style={styles.navButton}
-                compact
-              >
-                Next >
-              </Button>
-            </View>
-            
-            <Button 
-              mode="text" 
-              onPress={setCurrentMonthToNow}
-              style={styles.currentMonthButton}
-            >
-              Go to Current Month
-            </Button>
-            
-            <View style={styles.statsContainer}>
-              <Surface style={[styles.studentCard, { backgroundColor: '#EBF8FF' }]}>
-                <Text variant="headlineSmall" style={{ color: '#1E40AF' }}>Kareem</Text>
-                <Text>Classes: {kareemStats.classCount}</Text>
-                <Text style={{ color: '#10B981' }}>Total: ${kareemStats.total.toFixed(2)}</Text>
-              </Surface>
-              
-              <Surface style={[styles.studentCard, { backgroundColor: '#FDF2F8' }]}>
-                <Text variant="headlineSmall" style={{ color: '#BE185D' }}>Sara_Hana</Text>
-                <Text>Classes: {saraHanaStats.classCount}</Text>
-                <Text style={{ color: '#10B981' }}>Total: ${saraHanaStats.total.toFixed(2)}</Text>
-              </Surface>
-            </View>
-            
-            <Surface style={styles.totalCard}>
-              <View style={styles.totalRow}>
-                <Text variant="titleLarge">Total Classes:</Text>
-                <Text variant="headlineSmall" style={{ color: '#3B82F6' }}>{totalClasses}</Text>
+            <View style={styles.monthSelectorRow}>
+              <IconButton icon="chevron-right" size={24} onPress={() => navigateMonth(1)} />
+              <View style={styles.monthDisplayContainer}>
+                <Text style={styles.monthText}>{getMonthName(currentMonth)}</Text>
               </View>
-              <View style={styles.totalRow}>
-                <Text variant="titleLarge">Total Revenue:</Text>
-                <Text variant="headlineSmall" style={{ color: '#10B981' }}>${totalRevenue.toFixed(2)}</Text>
+              <IconButton icon="chevron-left" size={24} onPress={() => navigateMonth(-1)} />
+            </View>
+
+            {/* Total Banner */}
+            <Surface style={styles.totalBanner}>
+              <View style={styles.totalItem}>
+                <Text style={styles.totalLabel}>إجمالي الحصص</Text>
+                <Text style={styles.totalValue}>{getTotalMonthlyClassesCount()}</Text>
+              </View>
+              <View style={styles.totalDivider} />
+              <View style={styles.totalItem}>
+                <Text style={styles.totalLabel}>المبلغ المستحق</Text>
+                <Text style={[styles.totalValue, styles.revenueText]}>
+                  {formatMoney(getTotalMonthlyRevenue())}
+                </Text>
               </View>
             </Surface>
           </Card.Content>
         </Card>
 
-        {/* Student Classes Overview */}
-        {students.map(student => (
-          <Card key={student.key} style={styles.card}>
-            <Card.Title 
-              title={`${student.name}'s Classes`}
-              titleStyle={{ color: student.color }}
-            />
-            <Card.Content>
-              <Text style={styles.tapToView}>Tap to view all classes</Text>
-              <View style={styles.classStatsRow}>
-                <Text>Classes: {getStudentStats(student.key, currentMonth).classCount}</Text>
-                <Text style={styles.totalAmount}>Total: ${getStudentStats(student.key, currentMonth).total.toFixed(2)}</Text>
-              </View>
-              <Text style={styles.noClassesText}>
-                {getStudentStats(student.key, currentMonth).classCount === 0 
-                  ? 'No classes scheduled this month' 
-                  : `${getStudentStats(student.key, currentMonth).classCount} classes this month`}
-              </Text>
-            </Card.Content>
-          </Card>
-        ))}
+        {/* Children Management & Stats */}
+        {children.map((child) => {
+          const monthlyClasses = getMonthlyClasses(child.id);
+          const childTotal = getStudentMonthlyTotal(child.id);
+          const childActs = getChildActivities(child.id);
+          const isExpanded = expandedClasses[child.id];
 
-        {/* Quick Actions */}
-        <Card style={styles.card}>
-          <Card.Title title="Quick Actions" />
-          <Card.Content>
-            <View style={styles.actionButtonsContainer}>
-              <Button 
-                mode="contained" 
-                onPress={() => setPriceModalVisible(true)}
-                style={[styles.actionButton, { backgroundColor: '#6366F1' }]}
-              >
-                Set Prices
-              </Button>
-              <Button 
-                mode="contained" 
-                onPress={() => setScheduleModalVisible(true)}
-                style={[styles.actionButton, { backgroundColor: '#A855F7' }]}
-              >
-                Add Schedule
-              </Button>
-              <Button 
-                mode="contained" 
-                onPress={() => setClassModalVisible(true)}
-                style={[styles.actionButton, { backgroundColor: '#10B981' }]}
-              >
-                Add Class
-              </Button>
-              <Button 
-                mode="contained" 
-                onPress={() => setReportModalVisible(true)}
-                style={[styles.actionButton, { backgroundColor: '#F59E0B' }]}
-              >
-                Reports
-              </Button>
-              <Button 
-                mode="outlined" 
-                onPress={debugSchedules}
-                style={[styles.actionButton, { backgroundColor: '#EF4444' }]}
-              >
-                Debug
-              </Button>
-            </View>
-          </Card.Content>
-        </Card>
+          return (
+            <Card key={child.id} style={[styles.card, { borderLeftColor: child.color || '#3B82F6', borderLeftWidth: 5 }]}>
+              <Card.Content>
+                <View style={styles.childHeader}>
+                  <View style={styles.childNameWrap}>
+                    <Text style={styles.childName}>{child.name}</Text>
+                    <Text style={styles.childSubStats}>
+                      {monthlyClasses.length} حصة • {formatMoney(childTotal)}
+                    </Text>
+                  </View>
+                  <View style={styles.childActions}>
+                    <IconButton
+                      icon="plus-circle"
+                      size={20}
+                      iconColor="#3B82F6"
+                      onPress={() => {
+                        setSelectedStudent(child.id);
+                        setClassModalVisible(true);
+                      }}
+                    />
+                    <IconButton
+                      icon="lightning-bolt"
+                      size={20}
+                      iconColor="#10B981"
+                      onPress={() => generateMonthlyClasses(child.id)}
+                    />
+                    <IconButton
+                      icon={isExpanded ? 'chevron-up' : 'chevron-down'}
+                      size={20}
+                      onPress={() => toggleClassDetails(child.id)}
+                    />
+                  </View>
+                </View>
 
-        {/* Generate Monthly Classes */}
-        <Card style={styles.card}>
-          <Card.Title title="Generate Monthly Classes" />
-          <Card.Content>
-            {students.map(student => (
-              <Button 
-                key={student.key}
-                mode="contained" 
-                onPress={() => generateClassesForStudent(student.key)}
-                style={[styles.generateButton, { backgroundColor: student.color }]}
-                disabled={!schedules[student.key] || schedules[student.key].length === 0}
-              >
-                Generate Classes for {student.name}
-              </Button>
-            ))}
-          </Card.Content>
-        </Card>
+                {/* Activities Chips */}
+                <View style={styles.activitiesRow}>
+                  {childActs.map((act) => (
+                    <Chip
+                      key={act.id}
+                      style={styles.actChip}
+                      onClose={() => deleteActivity(act.id)}
+                    >
+                      {act.name} ({formatMoney(act.price)})
+                    </Chip>
+                  ))}
+                  <Chip
+                    icon="plus"
+                    style={styles.addActChip}
+                    onPress={() => {
+                      setActivityChildId(child.id);
+                      setActivityModalVisible(true);
+                    }}
+                  >
+                    نشاط جديد
+                  </Chip>
+                </View>
 
-        <View style={styles.bottomPadding} />
+                {/* Expanded Session Logs */}
+                {isExpanded && (
+                  <View style={styles.classesListContainer}>
+                    <Divider style={styles.divider} />
+                    <Text style={styles.classesListTitle}>سجل الحصص لهذا الشهر:</Text>
+                    {monthlyClasses.length === 0 ? (
+                      <Text style={styles.emptyText}>لا توجد حصص مسجلة</Text>
+                    ) : (
+                      monthlyClasses.map((cls) => {
+                        const act = getActivityById(cls.activityId);
+                        return (
+                          <View key={cls.id} style={styles.classRow}>
+                            <View>
+                              <Text style={styles.classDate}>{cls.date} @ {cls.time}</Text>
+                              {act && <Text style={styles.classActName}>{act.name}</Text>}
+                            </View>
+                            <View style={styles.classRight}>
+                              <Text style={styles.classPrice}>{formatMoney(cls.price)}</Text>
+                              <IconButton
+                                icon="delete-outline"
+                                size={18}
+                                iconColor="#EF4444"
+                                onPress={() => removeClass(child.id, cls.id)}
+                              />
+                            </View>
+                          </View>
+                        );
+                      })
+                    )}
+                  </View>
+                )}
+              </Card.Content>
+            </Card>
+          );
+        })}
+
+        {/* Quick Actions Footer */}
+        <View style={styles.footerActions}>
+          <Button
+            mode="contained"
+            icon="calendar-clock"
+            style={styles.actionBtn}
+            onPress={() => setScheduleModalVisible(true)}
+          >
+            إضافة جدول أسبوعي
+          </Button>
+          <Button
+            mode="outlined"
+            icon="share"
+            style={styles.actionBtn}
+            onPress={() => shareMonthlyReport()}
+          >
+            مشاركة التقرير
+          </Button>
+        </View>
       </ScrollView>
 
-      {/* Price Setting Modal */}
+      {/* Add Child Modal */}
       <Portal>
-        <Modal 
-          visible={priceModalVisible} 
-          onDismiss={() => setPriceModalVisible(false)}
+        <Modal
+          visible={childModalVisible}
+          onDismiss={() => setChildModalVisible(false)}
           contentContainerStyle={styles.modal}
         >
-          <Text variant="headlineSmall" style={styles.modalTitle}>Price Settings</Text>
-          
+          <Text style={styles.modalTitle}>إضافة ابن جديد</Text>
           <TextInput
-            label="Kareem - Price per Class"
-            value={prices.kareem}
-            onChangeText={(text) => updatePrice('kareem', text)}
-            keyboardType="numeric"
-            style={styles.priceInput}
+            label="اسم الابن / الابنة"
+            value={childNameInput}
+            onChangeText={setChildNameInput}
+            style={styles.input}
           />
-          
-          <TextInput
-            label="Sara_Hana - Price per Class"
-            value={prices.saraHana}
-            onChangeText={(text) => updatePrice('saraHana', text)}
-            keyboardType="numeric"
-            style={styles.priceInput}
-          />
-          
-          <Button 
-            mode="contained" 
-            onPress={() => setPriceModalVisible(false)}
-            style={styles.modalButton}
-          >
-            Done
+          <Button mode="contained" onPress={saveChild} style={styles.modalBtn}>
+            حفظ
           </Button>
         </Modal>
       </Portal>
 
-      {/* Add Class Modal */}
+      {/* Add Activity Modal */}
       <Portal>
-        <Modal 
-          visible={classModalVisible} 
+        <Modal
+          visible={activityModalVisible}
+          onDismiss={() => setActivityModalVisible(false)}
+          contentContainerStyle={styles.modal}
+        >
+          <Text style={styles.modalTitle}>إضافة مادة / نشاط</Text>
+          <TextInput
+            label="اسم النشاط (مثال: إنجليزي، سباحة)"
+            value={activityNameInput}
+            onChangeText={setActivityNameInput}
+            style={styles.input}
+          />
+          <TextInput
+            label="سعر الحصة / الجلسة"
+            value={activityPriceInput}
+            onChangeText={setActivityPriceInput}
+            keyboardType="numeric"
+            style={styles.input}
+          />
+          <Button mode="contained" onPress={saveActivity} style={styles.modalBtn}>
+            حفظ النشاط
+          </Button>
+        </Modal>
+      </Portal>
+
+      {/* Add Extra Class Modal */}
+      <Portal>
+        <Modal
+          visible={classModalVisible}
           onDismiss={() => setClassModalVisible(false)}
           contentContainerStyle={styles.modal}
         >
-          <Text variant="headlineSmall" style={styles.modalTitle}>Add Class</Text>
-          
-          <Text style={styles.modalLabel}>Select Student:</Text>
-          <View style={styles.studentSelector}>
-            {students.map(student => (
-              <Chip
-                key={student.key}
-                selected={selectedStudent === student.key}
-                onPress={() => setSelectedStudent(student.key)}
-                style={styles.studentChip}
-              >
-                {student.name}
-              </Chip>
-            ))}
-          </View>
-          
-          <Button
-            mode="outlined"
-            onPress={() => setShowDatePicker(true)}
-            style={styles.dateButton}
-          >
-            Date: {formatDate(newClassDate)}
+          <Text style={styles.modalTitle}>إضافة حصة إضافية</Text>
+          <Text style={styles.modalSubtitle}>التاريخ: {formatDate(newClassDate)}</Text>
+          <TextInput
+            label="سعر مخصص (اختياري)"
+            value={customPriceInput}
+            onChangeText={setCustomPriceInput}
+            keyboardType="numeric"
+            placeholder="سعر النشاط التلقائي"
+            style={styles.input}
+          />
+          <Button mode="contained" onPress={addClass} style={styles.modalBtn}>
+            إضافة الحصة
           </Button>
-          
-          {showDatePicker && (
-            <DateTimePicker
-              value={newClassDate}
-              mode="date"
-              display="default"
-              onChange={onDateChange}
-            />
-          )}
-          
-          <Text style={styles.modalLabel}>Select Time: {getFormattedTime()}</Text>
-          
-          <Text style={styles.timeSubLabel}>Hour:</Text>
-          <ScrollView style={styles.timeScrollView} horizontal showsHorizontalScrollIndicator={false}>
-            <View style={styles.hourSelector}>
-              {hours.map(hour => (
-                <Chip
-                  key={hour}
-                  selected={selectedHour === hour}
-                  onPress={() => setSelectedHour(hour)}
-                  style={styles.timeChip}
-                >
-                  {String(hour).padStart(2, '0')}
-                </Chip>
-              ))}
-            </View>
-          </ScrollView>
-          
-          <Text style={styles.timeSubLabel}>Minute:</Text>
-          <ScrollView style={styles.timeScrollView} horizontal showsHorizontalScrollIndicator={false}>
-            <View style={styles.minuteSelector}>
-              {minutes.map(minute => (
-                <Chip
-                  key={minute}
-                  selected={selectedMinute === minute}
-                  onPress={() => setSelectedMinute(minute)}
-                  style={styles.timeChip}
-                >
-                  {String(minute).padStart(2, '0')}
-                </Chip>
-              ))}
-            </View>
-          </ScrollView>
-          
-          <View style={styles.modalButtons}>
-            <Button 
-              mode="outlined" 
-              onPress={() => setClassModalVisible(false)}
-              style={styles.modalButtonHalf}
-            >
-              Cancel
-            </Button>
-            <Button 
-              mode="contained" 
-              onPress={addClass}
-              style={styles.modalButtonHalf}
-            >
-              Add Class
-            </Button>
-          </View>
         </Modal>
       </Portal>
 
-      {/* Schedule Modal */}
+      {/* Add Schedule Modal */}
       <Portal>
-        <Modal 
-          visible={scheduleModalVisible} 
+        <Modal
+          visible={scheduleModalVisible}
           onDismiss={() => setScheduleModalVisible(false)}
           contentContainerStyle={styles.modal}
         >
-          <Text variant="headlineSmall" style={styles.modalTitle}>Add Schedule</Text>
-          
-          <Text style={styles.modalLabel}>Select Student:</Text>
-          <View style={styles.studentSelector}>
-            {students.map(student => (
+          <Text style={styles.modalTitle}>إضافة موعد أسبوعي متكرر</Text>
+          <View style={styles.chipRow}>
+            {children.map((c) => (
               <Chip
-                key={student.key}
-                selected={selectedStudent === student.key}
-                onPress={() => setSelectedStudent(student.key)}
-                style={styles.studentChip}
+                key={c.id}
+                selected={selectedStudent === c.id}
+                onPress={() => setSelectedStudent(c.id)}
+                style={styles.choiceChip}
               >
-                {student.name}
+                {c.name}
               </Chip>
             ))}
           </View>
-          
-          <Text style={styles.modalLabel}>Select Day:</Text>
-          <View style={styles.daySelector}>
-            {daysOfWeek.map(day => (
+          <View style={styles.chipRow}>
+            {daysOfWeek.map((day) => (
               <Chip
                 key={day}
                 selected={selectedDay === day}
                 onPress={() => setSelectedDay(day)}
-                style={styles.dayChip}
+                style={styles.choiceChip}
               >
                 {day}
               </Chip>
             ))}
           </View>
-          
-          <Text style={styles.modalLabel}>Select Time: {getFormattedScheduleTime()}</Text>
-          
-          <View style={styles.timeInputModeContainer}>
-            <Button 
-              mode={scheduleTimeInputMode === 'selector' ? 'contained' : 'outlined'}
-              onPress={() => setScheduleTimeInputMode('selector')}
-              style={styles.timeInputModeButton}
-              compact
-            >
-              Selector
-            </Button>
-            <Button 
-              mode={scheduleTimeInputMode === 'input' ? 'contained' : 'outlined'}
-              onPress={() => setScheduleTimeInputMode('input')}
-              style={styles.timeInputModeButton}
-              compact
-            >
-              Manual Input
-            </Button>
-          </View>
-
-          {scheduleTimeInputMode === 'input' ? (
-            <View style={styles.timeInputContainer}>
-              <TextInput
-                label="Time (HH:MM)"
-                value={scheduleTimeInputText}
-                onChangeText={(text) => handleTimeInputChange(text, true)}
-                placeholder="10:00"
-                keyboardType="numeric"
-                style={styles.timeInput}
-                mode="outlined"
-              />
-              <Text style={styles.timeInputHint}>Format: HH:MM (24-hour)</Text>
-            </View>
-          ) : (
-            <View>
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.timeScrollView}>
-                <Text style={styles.timeSubLabel}>Hour:</Text>
-                <View style={styles.hourSelector}>
-                  {hours.map(hour => (
-                    <Chip
-                      key={hour}
-                      selected={selectedScheduleHour === hour}
-                      onPress={() => {
-                        setSelectedScheduleHour(hour);
-                        setScheduleTimeInputText(getFormattedScheduleTime());
-                      }}
-                      style={styles.timeChip}
-                    >
-                      {String(hour).padStart(2, '0')}
-                    </Chip>
-                  ))}
-                </View>
-              </ScrollView>
-              
-              <View style={styles.minuteSelectorContainer}>
-                <View style={styles.minuteModeToggle}>
-                  <Text style={styles.timeSubLabel}>Minutes:</Text>
-                  <Button
-                    mode="text"
-                    onPress={() => setShowQuickMinutes(!showQuickMinutes)}
-                    compact
-                  >
-                    {showQuickMinutes ? 'Show All' : 'Quick Select'}
-                  </Button>
-                </View>
-                <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.timeScrollView}>
-                  <View style={styles.minuteSelector}>
-                    {(showQuickMinutes ? quickMinutes : minutes).map(minute => (
-                      <Chip
-                        key={minute}
-                        selected={selectedScheduleMinute === minute}
-                        onPress={() => {
-                          setSelectedScheduleMinute(minute);
-                          setScheduleTimeInputText(getFormattedScheduleTime());
-                        }}
-                        style={styles.timeChip}
-                      >
-                        {String(minute).padStart(2, '0')}
-                      </Chip>
-                    ))}
-                  </View>
-                </ScrollView>
-              </View>
-            </View>
-          )}
-
-          <View style={styles.modalButtons}>
-            <Button
-              mode="outlined"
-              onPress={() => setScheduleModalVisible(false)}
-              style={styles.modalButtonHalf}
-            >
-              Cancel
-            </Button>
-            <Button
-              mode="contained"
-              onPress={addSchedule}
-              style={styles.modalButtonHalf}
-            >
-              Add Schedule
-            </Button>
-          </View>
-          
-          {/* Show existing schedules */}
-          <Text style={styles.modalLabel}>
-            Existing Schedules for {students.find(s => s.key === selectedStudent)?.name}:
-          </Text>
-          {(schedules[selectedStudent] || []).length > 0 ? (
-            (schedules[selectedStudent] || []).map(schedule => (
-              <Surface key={schedule.id} style={styles.scheduleCard}>
-                <Text>{schedule.day} at {schedule.time}</Text>
-              </Surface>
-            ))
-          ) : (
-            <Text style={styles.noScheduleText}>No schedules yet</Text>
-          )}
-        </Modal>
-      </Portal>
-
-      {/* Reports Modal */}
-      <Portal>
-        <Modal 
-          visible={reportModalVisible} 
-          onDismiss={() => setReportModalVisible(false)}
-          contentContainerStyle={styles.modal}
-        >
-          <Text variant="headlineSmall" style={styles.modalTitle}>Monthly Reports</Text>
-          <Text variant="titleMedium" style={styles.reportMonth}>
-            {getMonthName(currentMonth)}
-          </Text>
-          
-          {/* Individual Reports */}
-          {students.map(student => {
-            const stats = getStudentStats(student.key, currentMonth);
-            return (
-              <Surface key={student.key} style={styles.reportCard}>
-                <Text variant="titleMedium" style={{ color: student.color }}>
-                  {student.name}'s Report
-                </Text>
-                <Text>Total Classes: {stats.classCount}</Text>
-                <Text>Price per Class: ${(parseFloat(prices[student.key]) || 0).toFixed(2)}</Text>
-                <Text style={{ color: '#10B981' }}>
-                  Total Amount: ${stats.total.toFixed(2)}
-                </Text>
-                <Button
-                  mode="outlined"
-                  onPress={() => generateReport(student.key)}
-                  style={styles.reportButton}
-                >
-                  Share {student.name}'s Report
-                </Button>
-                <Button
-                  mode="contained"
-                  onPress={() => downloadReport(student.key)}
-                  style={[styles.reportButton, styles.downloadButton]}
-                  icon="download"
-                >
-                  Download Report
-                </Button>
-              </Surface>
-            );
-          })}
-          
-          {/* Combined Report */}
-          <Surface style={styles.reportCard}>
-            <Text variant="titleMedium">Combined Report</Text>
-            <Text>Total Classes: {totalClasses}</Text>
-            <Text style={{ color: '#10B981' }}>Grand Total: ${totalRevenue.toFixed(2)}</Text>
-            <Button
-              mode="outlined"
-              onPress={() => generateReport('combined')}
-              style={styles.reportButton}
-            >
-              Share Combined Report
-            </Button>
-            <Button
-              mode="contained"
-              onPress={() => downloadReport('combined')}
-              style={[styles.reportButton, styles.downloadButton]}
-              icon="download"
-            >
-              Download Combined Report
-            </Button>
-          </Surface>
-          
-          <Button 
-            mode="contained" 
-            onPress={() => setReportModalVisible(false)}
-            style={styles.modalButton}
-          >
-            Close
+          <Button mode="contained" onPress={addSchedule} style={styles.modalBtn}>
+            إضافة للجدول
           </Button>
         </Modal>
       </Portal>
@@ -1211,298 +807,188 @@ const StudentClassManagementApp = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F9FAFB',
+    backgroundColor: '#F8FAFC',
   },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+  contentContainer: {
+    padding: 16,
+    paddingBottom: 40,
   },
-  statusCard: {
-    margin: 16,
-    marginBottom: 8,
-    padding: 12,
-    borderRadius: 8,
+  header: {
+    backgroundColor: '#FFFFFF',
     elevation: 2,
   },
-  statusText: {
-    textAlign: 'center',
+  headerTitle: {
     fontWeight: 'bold',
+    fontSize: 18,
   },
   card: {
-    margin: 16,
-    marginBottom: 8,
-    elevation: 4,
-  },
-  monthNavigationContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
     marginBottom: 16,
+    borderRadius: 16,
+    backgroundColor: '#FFFFFF',
+    elevation: 1,
   },
-  navButton: {
-    minWidth: 80,
+  monthSelectorRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
-  currentMonthDisplay: {
-    textAlign: 'center',
-    color: '#3B82F6',
+  monthDisplayContainer: {
+    alignItems: 'center',
+  },
+  monthText: {
+    fontSize: 18,
     fontWeight: 'bold',
+    color: '#1E293B',
+  },
+  totalBanner: {
+    marginTop: 12,
+    padding: 14,
+    borderRadius: 12,
+    backgroundColor: '#0F172A',
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    alignItems: 'center',
+  },
+  totalItem: {
+    alignItems: 'center',
+  },
+  totalLabel: {
+    fontSize: 11,
+    color: '#94A3B8',
+    marginBottom: 2,
+  },
+  totalValue: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#38BDF8',
+  },
+  revenueText: {
+    color: '#34D399',
+  },
+  totalDivider: {
+    width: 1,
+    height: 28,
+    backgroundColor: '#334155',
+  },
+  childHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  childNameWrap: {
     flex: 1,
   },
-  currentMonthButton: {
-    alignSelf: 'center',
-    marginBottom: 16,
-  },
-  tapToView: {
-    color: '#6B7280',
-    fontSize: 14,
-    marginBottom: 8,
-  },
-  classStatsRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 8,
-  },
-  totalAmount: {
-    color: '#10B981',
+  childName: {
+    fontSize: 16,
     fontWeight: 'bold',
+    color: '#1E293B',
   },
-  noClassesText: {
-    color: '#6B7280',
-    fontStyle: 'italic',
-    textAlign: 'center',
-    marginTop: 8,
+  childSubStats: {
+    fontSize: 12,
+    color: '#64748B',
+    marginTop: 2,
   },
-  generateButton: {
-    marginVertical: 4,
-    marginHorizontal: 0,
-  },
-  statsContainer: {
+  childActions: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 16,
+    alignItems: 'center',
   },
-  studentCard: {
-    flex: 0.48,
-    padding: 16,
-    borderRadius: 8,
-    elevation: 2,
+  activitiesRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
+    marginTop: 10,
   },
-  totalCard: {
-    padding: 16,
-    borderRadius: 8,
-    elevation: 2,
-    backgroundColor: '#F3F4F6',
+  actChip: {
+    backgroundColor: '#EFF6FF',
   },
-  totalRow: {
+  addActChip: {
+    backgroundColor: '#F1F5F9',
+  },
+  classesListContainer: {
+    marginTop: 10,
+  },
+  divider: {
+    marginVertical: 8,
+  },
+  classesListTitle: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#475569',
+    marginBottom: 6,
+  },
+  classRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginVertical: 4,
+    paddingVertical: 6,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F1F5F9',
   },
-  classesPreview: {
-    marginTop: 8,
+  classDate: {
+    fontSize: 13,
+    fontWeight: '500',
+    color: '#1E293B',
   },
-  classChip: {
-    marginVertical: 2,
-    marginRight: 8,
+  classActName: {
+    fontSize: 11,
+    color: '#2563EB',
   },
-  classChipText: {
-    fontSize: 12,
-  },
-  moreClasses: {
-    fontStyle: 'italic',
-    color: '#6B7280',
-    marginTop: 8,
-  },
-  actionButtonsContainer: {
+  classRight: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
+    alignItems: 'center',
   },
-  actionButton: {
-    width: '48%',
-    marginVertical: 4,
+  classPrice: {
+    fontSize: 13,
+    fontWeight: 'bold',
+    color: '#059669',
+  },
+  emptyText: {
+    fontSize: 12,
+    color: '#94A3B8',
+    fontStyle: 'italic',
+    paddingVertical: 4,
+  },
+  footerActions: {
+    gap: 10,
+    marginTop: 8,
+  },
+  actionBtn: {
+    borderRadius: 12,
   },
   modal: {
     backgroundColor: 'white',
     padding: 20,
     margin: 20,
-    borderRadius: 8,
-    maxHeight: '80%',
+    borderRadius: 16,
   },
   modalTitle: {
-    textAlign: 'center',
-    marginBottom: 16,
-  },
-  modalLabel: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: 'bold',
-    marginTop: 16,
-    marginBottom: 8,
-  },
-  priceInput: {
-    marginBottom: 16,
-  },
-  studentSelector: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    marginBottom: 16,
-  },
-  studentChip: {
-    margin: 4,
-  },
-  dateButton: {
-    marginVertical: 8,
-  },
-  modalButtons: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 16,
-  },
-  modalButton: {
-    marginTop: 16,
-  },
-  modalButtonHalf: {
-    width: '48%',
-  },
-  reportMonth: {
-    textAlign: 'center',
-    marginBottom: 16,
-    color: '#3B82F6',
-  },
-  reportCard: {
-    padding: 16,
     marginBottom: 12,
-    borderRadius: 8,
-    elevation: 2,
-  },
-  reportButton: {
-    marginTop: 8,
-  },
-  sectionTitle: {
     textAlign: 'center',
-    marginBottom: 16,
-    color: '#3B82F6',
   },
-  scheduleCard: {
-    padding: 12,
-    marginVertical: 8,
-    borderRadius: 8,
-    elevation: 2,
+  modalSubtitle: {
+    fontSize: 13,
+    color: '#64748B',
+    marginBottom: 12,
+    textAlign: 'center',
   },
-  schedulesContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+  input: {
+    marginBottom: 12,
+    backgroundColor: 'white',
+  },
+  modalBtn: {
     marginTop: 8,
-  },
-  scheduleChip: {
-    margin: 4,
-  },
-  noScheduleText: {
-    fontStyle: 'italic',
-    color: '#6B7280',
-    marginTop: 4,
-  },
-  scheduleActionsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 16,
-  },
-  scheduleActionButton: {
-    width: '48%',
-  },
-  daySelector: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    marginBottom: 16,
-  },
-  dayChip: {
-    margin: 2,
-  },
-  timeSelector: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    marginBottom: 16,
-  },
-  timeScrollView: {
-    maxHeight: 120,
-    marginBottom: 16,
-  },
-  hourSelector: {
-    flexDirection: 'row',
-    paddingHorizontal: 8,
-  },
-  minuteSelector: {
-    flexDirection: 'row',
-    paddingHorizontal: 8,
-  },
-  timeSubLabel: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    marginBottom: 8,
-    color: '#374151',
-  },
-  timeChip: {
-    margin: 2,
-    minWidth: 50,
-  },
-  monthsList: {
-    maxHeight: 300,
-    marginBottom: 16,
-  },
-  monthItem: {
-    marginVertical: 4,
     borderRadius: 8,
-    elevation: 1,
   },
-  selectedMonthItem: {
-    backgroundColor: '#EBF8FF',
-    elevation: 3,
-  },
-  monthButton: {
-    width: '100%',
-    justifyContent: 'flex-start',
-  },
-  monthButtonText: {
-    fontSize: 16,
-    textAlign: 'left',
-  },
-  selectedMonthButtonText: {
-    color: '#1E40AF',
-    fontWeight: 'bold',
-  },
-  bottomPadding: {
-    height: 100,
-  },
-  timeInputModeContainer: {
+  chipRow: {
     flexDirection: 'row',
-    marginBottom: 16,
-    justifyContent: 'center',
+    flexWrap: 'wrap',
+    gap: 6,
+    marginBottom: 12,
   },
-  timeInputModeButton: {
-    marginHorizontal: 8,
-    minWidth: 100,
-  },
-  timeInputContainer: {
-    marginBottom: 16,
-  },
-  timeInput: {
-    marginBottom: 8,
-  },
-  timeInputHint: {
-    fontSize: 12,
-    color: '#6B7280',
-    fontStyle: 'italic',
-  },
-  minuteSelectorContainer: {
-    marginTop: 8,
-  },
-  minuteModeToggle: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 8,
+  choiceChip: {
+    marginBottom: 4,
   },
 });
 
