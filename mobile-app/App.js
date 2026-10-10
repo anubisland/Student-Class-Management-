@@ -593,7 +593,7 @@ const StudentClassManagementApp = () => {
                     <IconButton
                       icon="plus-circle"
                       size={20}
-                      color="#3B82F6"
+                      iconColor="#3B82F6"
                       onPress={() => {
                         setSelectedStudent(child.id);
                         setClassModalVisible(true);
@@ -602,7 +602,7 @@ const StudentClassManagementApp = () => {
                     <IconButton
                       icon="lightning-bolt"
                       size={20}
-                      color="#10B981"
+                      iconColor="#10B981"
                       onPress={() => generateMonthlyClasses(child.id)}
                     />
                     <IconButton
@@ -657,7 +657,7 @@ const StudentClassManagementApp = () => {
                               <IconButton
                                 icon="delete-outline"
                                 size={18}
-                                color="#EF4444"
+                                iconColor="#EF4444"
                                 onPress={() => removeClass(child.id, cls.id)}
                               />
                             </View>
