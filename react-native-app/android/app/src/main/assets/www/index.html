@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Family Class & Activity Management System</title>
+    
+    <!-- PWA & Favicon Meta Tags -->
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/png" href="favicon.png">
+    <link rel="shortcut icon" href="favicon.ico">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+    <meta name="theme-color" content="#3B82F6">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="حصص الأسرة">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            --font-en: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            --font-ar: 'Cairo', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        body {
+            font-family: var(--font-ar);
+            background-color: #f8fafc;
+            color: #1e293b;
+        }
+
+        html.lang-en body {
+            font-family: var(--font-en);
+        }
+
+        /* Language toggle pill */
+        #langToggle {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 72px;
+            height: 32px;
+            min-width: 44px;
+            min-height: 44px;
+            padding: 6px;
+            box-sizing: content-box;
+            border: 1.5px solid #d1d5db;
+            border-radius: 9999px;
+            background: #fff;
+            cursor: pointer;
+            transition: border-color 0.15s, box-shadow 0.15s;
+        }
+
+        #langToggle:hover {
+            border-color: #3b82f6;
+        }
+
+        #langToggle:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.4);
+            border-color: #3b82f6;
+        }
+
+        .lang-toggle-inner {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            width: 100%;
+        }
+
+        .lang-label-en,
+        .lang-label-ar {
+            font-size: 0.8125rem;
+            transition: color 0.15s, font-weight 0.15s;
+        }
+
+        .lang-label-ar {
+            font-family: var(--font-ar);
+        }
+
+        .lang-divider {
+            color: #9ca3af;
+            font-size: 0.75rem;
+        }
+
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+            body {
+                background: white;
+            }
+            .shadow-sm, .shadow {
+                box-shadow: none !important;
+            }
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+
+    <!-- Load i18n before main script so t() is available -->
+    <script src="i18n.js"></script>
+
+    <div class="container mx-auto px-4 py-8 max-w-6xl space-y-8">
+        
+        <!-- Header -->
+        <header class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div class="flex items-center gap-3">
+                    <img src="icons/icon-192.png" alt="App Icon" class="w-12 h-12 rounded-xl shadow-sm border border-slate-100">
+                    <div>
+                        <h1 class="text-2xl md:text-3xl font-extrabold text-slate-800 tracking-tight" data-i18n="app.title">Family Class & Activity Management System</h1>
+                        <p class="text-sm text-slate-500 mt-1" data-i18n="app.subtitle">Track classes, activities, schedules & monthly expenses for your children</p>
+                    </div>
+                </div>
+                
+                <div class="flex items-center gap-3 flex-wrap no-print">
+                    <div id="saveStatus" class="text-sm font-medium"></div>
+                    
+                    <div class="flex items-center gap-2 bg-emerald-50 text-emerald-700 px-3 py-1.5 rounded-full text-xs font-semibold border border-emerald-200">
+                        <span class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
+                        <span data-i18n="app.dbActive">Database Active</span>
+                    </div>
+
+                    <!-- PWA Install Button (Chrome / Edge / Android) -->
+                    <button
+                        id="installPwaBtn"
+                        class="hidden items-center gap-1.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-3.5 py-1.5 rounded-full text-xs font-bold shadow-sm transition animate-bounce"
+                        title="Install app to your computer or phone / تثبيت التطبيق على جهازك"
+                    >
+                        <span data-i18n="pwa.installApp">📲 تثبيت التطبيق</span>
+                    </button>
+
+                    <!-- Language Toggle -->
+                    <button
+                        id="langToggle"
+                        role="switch"
+                        aria-checked="true"
+                        aria-label="Switch to English / التحويل إلى الإنجليزية"
+                        onclick="toggleLanguage()"
+                        title="Switch language / تغيير اللغة"
+                    >
+                        <span class="lang-toggle-inner">
+                            <span class="lang-label-en" style="font-weight: 400; color: #6b7280;">EN</span>
+                            <span class="lang-divider">|</span>
+                            <span class="lang-label-ar" style="font-weight: 700; color: #1d4ed8;">عر</span>
+                        </span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Family Settings & Action Toolbar -->
+            <div class="mt-6 pt-6 border-t border-slate-100 flex flex-col md:flex-row justify-between items-stretch md:items-center gap-4 no-print">
+                <div class="flex items-center gap-3 flex-wrap">
+                    <div class="flex items-center gap-2">
+                        <label class="text-xs font-bold text-slate-600" data-i18n="settings.familyName">Family Name</label>
+                        <input type="text" id="familyNameInput" class="px-3 py-1.5 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none w-44" placeholder="مثال: أسرة أحمد" data-i18n-placeholder="settings.familyNamePlaceholder">
+                    </div>
+
+                    <div class="flex items-center gap-2">
+                        <label class="text-xs font-bold text-slate-600" data-i18n="settings.currency">Currency</label>
+                        <select id="currencySelect" class="px-3 py-1.5 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+                            <option value="EGP">ج.م (EGP)</option>
+                            <option value="SAR">ر.س (SAR)</option>
+                            <option value="AED">د.إ (AED)</option>
+                            <option value="KWD">د.ك (KWD)</option>
+                            <option value="QAR">ر.ق (QAR)</option>
+                            <option value="$">$ (USD)</option>
+                            <option value="€">€ (EUR)</option>
+                            <option value="£">£ (GBP)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-2 flex-wrap">
+                    <button onclick="openAddChildModal()" class="bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-4 py-2 rounded-xl transition flex items-center gap-1.5 shadow-sm">
+                        <span>➕</span>
+                        <span data-i18n="children.addChild">Add Child</span>
+                    </button>
+                    
+                    <button onclick="classManager.exportBackupJson()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold px-3 py-2 rounded-xl transition" data-i18n="settings.exportBackup">
+                        💾 Backup JSON
+                    </button>
+                    
+                    <label class="bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold px-3 py-2 rounded-xl transition cursor-pointer">
+                        <span data-i18n="settings.importBackup">Restore JSON</span>
+                        <input type="file" accept=".json" class="hidden" onchange="handleFileImport(event)">
+                    </label>
+                </div>
+            </div>
+        </header>
+
+        <!-- Children & Activities Management -->
+        <section class="bg-gradient-to-br from-slate-50/90 via-blue-50/30 to-indigo-50/20 p-6 rounded-3xl border border-slate-200/80 shadow-xs space-y-5">
+            <div class="flex justify-between items-center">
+                <div>
+                    <h2 class="text-xl font-bold text-slate-800" data-i18n="children.title">Children Management</h2>
+                    <p class="text-xs text-slate-500 mt-0.5" data-i18n="children.subtitle">Add and manage children profiles and their specific activities</p>
+                </div>
+            </div>
+            
+            <div id="childrenCardsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+        </section>
+
+        <!-- Monthly Overview Section -->
+        <section class="bg-gradient-to-br from-blue-50/70 via-indigo-50/40 to-slate-50/80 rounded-3xl shadow-xs border border-blue-100/80 p-6 space-y-6">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div>
+                    <h2 class="text-xl font-bold text-slate-800" data-i18n="monthlyOverview.title">Monthly Overview</h2>
+                    <div id="currentMonth" class="text-2xl font-black text-blue-600 mt-1"></div>
+                </div>
+                
+                <div class="flex items-center gap-3 no-print">
+                    <label class="text-sm font-semibold text-slate-700" data-i18n="monthlyOverview.selectMonth">Select Month:</label>
+                    <input type="month" id="monthSelector" class="px-4 py-2 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 font-medium bg-white outline-none shadow-2xs">
+                </div>
+            </div>
+
+            <!-- Dynamic Child Summary Cards -->
+            <div id="monthlyOverviewCards" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+
+            <!-- Combined Month Totals Banner -->
+            <div class="bg-gradient-to-r from-slate-900 to-slate-800 text-white rounded-2xl p-5 flex flex-col md:flex-row justify-between items-center gap-4 shadow-sm">
+                <div class="flex items-center gap-4">
+                    <div class="p-3 bg-white/10 rounded-xl text-2xl">📊</div>
+                    <div>
+                        <div class="text-xs text-slate-400 font-medium" data-i18n="monthlyOverview.totalClasses">Total Sessions (All Children):</div>
+                        <div id="totalMonthlyClasses" class="text-2xl font-black text-blue-400">0</div>
+                    </div>
+                </div>
+                <div class="text-center md:text-right">
+                    <div class="text-xs text-slate-400 font-medium" data-i18n="monthlyOverview.totalRevenue">Total Monthly Cost:</div>
+                    <div id="totalMonthlyRevenue" class="text-3xl font-black text-emerald-400">$0.00</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Weekly Recurring Schedules -->
+        <section class="bg-gradient-to-br from-emerald-50/70 via-teal-50/40 to-cyan-50/30 rounded-3xl shadow-xs border border-emerald-100/80 p-6 space-y-5">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
+                <div>
+                    <h2 class="text-xl font-bold text-slate-800" data-i18n="schedules.title">Weekly Recurring Schedules</h2>
+                    <p class="text-xs text-slate-500 mt-0.5" data-i18n="schedules.subtitle">Set up weekly recurring schedules to auto-generate all sessions for the month</p>
+                </div>
+                <button onclick="classManager.generateAllChildrenMonthlyClasses()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-4 py-2 rounded-xl transition shadow-xs flex items-center gap-1.5 no-print">
+                    <span>⚡</span>
+                    <span data-i18n="schedules.generateAll">Generate for All Children</span>
+                </button>
+            </div>
+
+            <div id="dynamicSchedulesContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+        </section>
+
+        <!-- Add Extra / Makeup Sessions -->
+        <section class="bg-gradient-to-br from-amber-50/70 via-orange-50/40 to-yellow-50/30 rounded-3xl shadow-xs border border-amber-100/80 p-6 no-print space-y-4">
+            <div>
+                <h2 class="text-xl font-bold text-slate-800" data-i18n="extraClasses.title">Add Extra / Makeup Session</h2>
+                <p class="text-xs text-slate-500 mt-0.5" data-i18n="extraClasses.subtitle">Add individual sessions outside the regular recurring schedule</p>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 pt-2">
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1" data-i18n="extraClasses.selectChild">Select Child</label>
+                    <select id="extraClassChildSelect" class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm bg-white outline-none focus:ring-2 focus:ring-blue-500 shadow-2xs"></select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1" data-i18n="extraClasses.selectActivity">Select Activity</label>
+                    <select id="extraClassActivitySelect" class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm bg-white outline-none focus:ring-2 focus:ring-blue-500 shadow-2xs"></select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Date</label>
+                    <input type="date" id="extraClassDate" class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm bg-white outline-none focus:ring-2 focus:ring-blue-500 shadow-2xs">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Time</label>
+                    <input type="time" id="extraClassTime" value="16:00" class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm bg-white outline-none focus:ring-2 focus:ring-blue-500 shadow-2xs">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1" data-i18n="extraClasses.sessionPrice">Custom Price</label>
+                    <input type="number" id="extraClassCustomPrice" step="0.5" placeholder="Auto" class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm bg-white outline-none focus:ring-2 focus:ring-blue-500 shadow-2xs">
+                </div>
+
+                <div class="flex items-end">
+                    <button onclick="handleExtraClassAdd()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-xl text-sm transition shadow-xs">
+                        <span data-i18n="extraClasses.addClass">+ Add Session</span>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Session Logs & Attendance -->
+        <section class="bg-gradient-to-br from-purple-50/60 via-slate-50/50 to-indigo-50/30 rounded-3xl shadow-xs border border-purple-100/80 p-6 space-y-5">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
+                <div>
+                    <h2 class="text-xl font-bold text-slate-800" data-i18n="classDetails.title">Session Logs & Attendance</h2>
+                    <p class="text-xs text-slate-500 mt-0.5">Toggle session completion status or remove sessions</p>
+                </div>
+                <div class="flex items-center gap-2 no-print">
+                    <label class="text-xs font-bold text-slate-700" data-i18n="classDetails.filterBy">Filter by Child:</label>
+                    <select id="childFilterSelector" class="px-3 py-1.5 text-xs border border-slate-300 rounded-xl bg-white outline-none shadow-2xs">
+                        <option value="all" data-i18n="monthlyOverview.allChildren">All Children</option>
+                    </select>
+                </div>
+            </div>
+
+            <div id="dynamicClassDetailsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+        </section>
+
+        <!-- Monthly Financial Reports & Invoices -->
+        <section class="bg-gradient-to-br from-rose-50/60 via-pink-50/30 to-slate-50/50 rounded-3xl shadow-xs border border-rose-100/80 p-6 space-y-6">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div>
+                    <h2 class="text-xl font-bold text-slate-800" data-i18n="reports.title">Monthly Financial Reports & Invoices</h2>
+                    <p class="text-xs text-slate-500 mt-0.5" data-i18n="reports.summary">Summary of completed sessions and total fees</p>
+                </div>
+
+                <div class="flex items-center gap-2 flex-wrap no-print">
+                    <button onclick="classManager.exportCsvReport()" class="bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-300 text-xs font-bold px-3 py-2 rounded-xl transition shadow-2xs" data-i18n="reports.downloadCsv">
+                        📊 Export CSV
+                    </button>
+                    <button onclick="window.print()" class="bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 text-xs font-bold px-3 py-2 rounded-xl transition shadow-2xs" data-i18n="reports.print">
+                        🖨️ Print / PDF
+                    </button>
+                </div>
+            </div>
+
+            <!-- Individual Child Reports -->
+            <div id="dynamicReportsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+
+            <!-- Combined Family Report -->
+            <div class="border border-slate-200/80 rounded-2xl p-6 bg-white/90 shadow-2xs space-y-4">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                    <h3 class="text-lg font-bold text-slate-800" data-i18n="reports.combined">Combined Family Monthly Report</h3>
+                    <div class="flex items-center gap-2 flex-wrap no-print">
+                        <button onclick="classManager.downloadReport('combined')" class="bg-slate-800 hover:bg-slate-900 text-white text-xs font-bold px-3 py-1.5 rounded-xl transition shadow-xs" data-i18n="reports.downloadCombined">
+                            📥 Download Report
+                        </button>
+                        <button onclick="classManager.shareWhatsApp('combined')" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-3 py-1.5 rounded-xl transition shadow-xs" title="WhatsApp">
+                            💬 WhatsApp
+                        </button>
+                    </div>
+                </div>
+                <div id="dynamicCombinedReport"></div>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- Hidden compatibility elements to guarantee 100% backward compatibility for legacy tests -->
+    <div style="display:none;" id="legacyCompatContainer">
+        <div id="kareemMonthlyClasses">0</div>
+        <div id="kareemMonthlyTotal">$0.00</div>
+        <div id="saraHanaMonthlyClasses">0</div>
+        <div id="saraHanaMonthlyTotal">$0.00</div>
+        <div id="kareemClasses"></div>
+        <div id="saraHanaClasses"></div>
+        <div id="kareemScheduleList"></div>
+        <div id="saraHanaScheduleList"></div>
+        <div id="kareemReport"></div>
+        <div id="saraHanaReport"></div>
+        <div id="combinedReport"></div>
+        <input type="number" id="kareemPrice" value="25">
+        <input type="number" id="saraHanaPrice" value="30">
+        <input type="date" id="kareemDate">
+        <input type="time" id="kareemTime" value="09:00">
+        <input type="date" id="saraHanaDate">
+        <input type="time" id="saraHanaTime" value="09:00">
+        <select id="kareemScheduleDay"><option value="">Select</option></select>
+        <input type="time" id="kareemScheduleTime" value="09:00">
+        <select id="saraHanaScheduleDay"><option value="">Select</option></select>
+        <input type="time" id="saraHanaScheduleTime" value="09:00">
+    </div>
+
+    <!-- PWA Service Worker & Chrome Install Handler -->
+    <script>
+        let deferredPrompt;
+        const installBtn = document.getElementById('installPwaBtn');
+
+        // Listen for Chrome install prompt
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            if (installBtn) {
+                installBtn.classList.remove('hidden');
+                installBtn.classList.add('inline-flex');
+            }
+        });
+
+        if (installBtn) {
+            installBtn.addEventListener('click', async () => {
+                if (deferredPrompt) {
+                    deferredPrompt.prompt();
+                    const { outcome } = await deferredPrompt.userChoice;
+                    if (outcome === 'accepted') {
+                        installBtn.textContent = '✓ تم التثبيت';
+                        setTimeout(() => installBtn.classList.add('hidden'), 3000);
+                    }
+                    deferredPrompt = null;
+                }
+            });
+        }
+
+        window.addEventListener('appinstalled', () => {
+            if (installBtn) installBtn.classList.add('hidden');
+            console.log('PWA installed successfully!');
+        });
+
+        // Register Service Worker
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then((reg) => console.log('ServiceWorker registered:', reg.scope))
+                    .catch((err) => console.warn('ServiceWorker registration error:', err));
+            });
+        }
+    </script>
+
+    <script src="script.js"></script>
+</body>
+</html>
