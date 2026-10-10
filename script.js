@@ -884,6 +884,67 @@ class StudentClassManager {
         });
     }
 
+    getChildPalette(childId, index) {
+        const PALETTES = [
+            {
+                bg: '#F0F9FF',        // Light Sky Blue
+                headerBg: '#E0F2FE',  // Sky Blue 100
+                border: '#BAE6FD',    // Sky Blue 200
+                accent: '#0284C7',    // Sky Blue 600
+                text: '#0C4A6E',      // Dark Sky Text
+                badgeBg: '#E0F2FE',
+                badgeText: '#0369A1'
+            },
+            {
+                bg: '#FDF2F8',        // Light Rose / Pink
+                headerBg: '#FCE7F3',  // Pink 100
+                border: '#FBCFE8',    // Pink 200
+                accent: '#DB2777',    // Pink 600
+                text: '#831843',      // Dark Pink Text
+                badgeBg: '#FCE7F3',
+                badgeText: '#BE185D'
+            },
+            {
+                bg: '#ECFDF5',        // Light Mint / Emerald
+                headerBg: '#D1FAE5',  // Emerald 100
+                border: '#A7F3D0',    // Emerald 200
+                accent: '#059669',    // Emerald 600
+                text: '#064E3B',      // Dark Emerald Text
+                badgeBg: '#D1FAE5',
+                badgeText: '#047857'
+            },
+            {
+                bg: '#FFFBEB',        // Light Warm Amber / Peach
+                headerBg: '#FEF3C7',  // Amber 100
+                border: '#FDE68A',    // Amber 200
+                accent: '#D97706',    // Amber 600
+                text: '#78350F',      // Dark Amber Text
+                badgeBg: '#FEF3C7',
+                badgeText: '#B45309'
+            },
+            {
+                bg: '#FAF5FF',        // Light Lavender / Purple
+                headerBg: '#F3E8FF',  // Purple 100
+                border: '#E9D5FF',    // Purple 200
+                accent: '#7C3AED',    // Purple 600
+                text: '#581C87',      // Dark Purple Text
+                badgeBg: '#F3E8FF',
+                badgeText: '#6D28D9'
+            },
+            {
+                bg: '#F0FDFA',        // Light Cyan / Teal
+                headerBg: '#CCFBF1',  // Teal 100
+                border: '#99F6E4',    // Teal 200
+                accent: '#0D9488',    // Teal 600
+                text: '#134E4A',      // Dark Teal Text
+                badgeBg: '#CCFBF1',
+                badgeText: '#0F766E'
+            }
+        ];
+        const idx = typeof index === 'number' ? index : this.children.findIndex(c => c.id === childId);
+        return PALETTES[(idx >= 0 ? idx : 0) % PALETTES.length];
+    }
+
     renderChildrenList() {
         const container = document.getElementById('childrenCardsContainer');
         if (!container) return;
@@ -892,13 +953,14 @@ class StudentClassManager {
 
         if (this.children.length === 0) {
             const empty = document.createElement('div');
-            empty.className = 'col-span-full text-center py-8 text-gray-500';
+            empty.className = 'col-span-full text-center py-8 text-gray-500 bg-white/70 rounded-2xl border border-dashed border-gray-300';
             empty.textContent = t('children.noChildren');
             container.appendChild(empty);
             return;
         }
 
-        this.children.forEach(child => {
+        this.children.forEach((child, idx) => {
+            const pal = this.getChildPalette(child.id, idx);
             const childActs = this.getChildActivities(child.id);
             const monthlyClasses = this.getMonthlyClasses(child.id, this.currentMonth);
             const activeClasses = monthlyClasses.filter(c => c.status !== 'cancelled');
@@ -906,38 +968,43 @@ class StudentClassManager {
             const totalMonthly = activeClasses.reduce((sum, c) => sum + (c.price !== undefined && c.price !== 0 ? c.price : childDefaultPrice), 0);
 
             const card = document.createElement('div');
-            card.className = 'bg-white border rounded-xl shadow-sm hover:shadow transition-shadow overflow-hidden flex flex-col';
-            card.style.borderTop = `4px solid ${child.color || '#3B82F6'}`;
+            card.className = 'border rounded-2xl shadow-sm hover:shadow-md transition-all overflow-hidden flex flex-col';
+            card.style.backgroundColor = pal.bg;
+            card.style.borderColor = pal.border;
+            card.style.borderTop = `4px solid ${child.color || pal.accent}`;
 
             // Card Header
             const header = document.createElement('div');
-            header.className = 'p-4 bg-gray-50 border-b flex justify-between items-center';
+            header.className = 'p-4 border-b flex justify-between items-center';
+            header.style.backgroundColor = pal.headerBg;
+            header.style.borderColor = pal.border;
 
             const nameWrap = document.createElement('div');
-            nameWrap.className = 'flex items-center gap-2';
+            nameWrap.className = 'flex items-center gap-2.5';
 
             const dot = document.createElement('span');
-            dot.className = 'w-3 h-3 rounded-full';
-            dot.style.backgroundColor = child.color || '#3B82F6';
+            dot.className = 'w-3.5 h-3.5 rounded-full shadow-xs';
+            dot.style.backgroundColor = child.color || pal.accent;
 
             const title = document.createElement('h3');
-            title.className = 'font-bold text-gray-800 text-lg';
+            title.className = 'font-bold text-base';
+            title.style.color = pal.text;
             title.textContent = child.name;
 
             nameWrap.appendChild(dot);
             nameWrap.appendChild(title);
 
             const actions = document.createElement('div');
-            actions.className = 'flex items-center gap-2';
+            actions.className = 'flex items-center gap-1';
 
             const editBtn = document.createElement('button');
-            editBtn.className = 'text-gray-500 hover:text-blue-600 p-1 rounded transition';
+            editBtn.className = 'p-1.5 rounded-lg hover:bg-white/60 transition text-sm';
             editBtn.title = t('children.editChild');
             editBtn.innerHTML = '✏️';
             editBtn.onclick = () => openEditChildModal(child.id);
 
             const delBtn = document.createElement('button');
-            delBtn.className = 'text-gray-500 hover:text-red-600 p-1 rounded transition';
+            delBtn.className = 'p-1.5 rounded-lg hover:bg-white/60 transition text-sm';
             delBtn.title = t('classDetails.delete');
             delBtn.innerHTML = '🗑️';
             delBtn.onclick = () => classManager.deleteChild(child.id);
@@ -953,19 +1020,20 @@ class StudentClassManager {
             body.className = 'p-4 flex-1 space-y-3';
 
             const statsRow = document.createElement('div');
-            statsRow.className = 'flex justify-between items-center text-sm py-1 border-b';
+            statsRow.className = 'flex justify-between items-center text-xs py-1.5 px-3 rounded-xl bg-white/80 border';
+            statsRow.style.borderColor = pal.border;
             statsRow.innerHTML = `
-                <span class="text-gray-600">${t('children.totalMonthly')}</span>
-                <span class="font-bold text-green-600">${this.formatCurrency(totalMonthly)} (${activeClasses.length} ${t('reports.classes')})</span>
+                <span class="text-gray-600 font-medium">${t('children.totalMonthly')}</span>
+                <span class="font-bold text-sm" style="color: ${pal.accent}">${this.formatCurrency(totalMonthly)} (${activeClasses.length} ${t('reports.classes')})</span>
             `;
             body.appendChild(statsRow);
 
             // Activities list
             const actTitleRow = document.createElement('div');
-            actTitleRow.className = 'flex justify-between items-center mt-2';
+            actTitleRow.className = 'flex justify-between items-center mt-2 px-1';
             actTitleRow.innerHTML = `
-                <span class="text-xs font-semibold text-gray-500 uppercase">${t('activities.title')}</span>
-                <button onclick="openAddActivityModal('${child.id}')" class="text-xs text-blue-600 hover:text-blue-800 font-medium">+ ${t('activities.addActivity')}</button>
+                <span class="text-[11px] font-bold uppercase tracking-wider" style="color: ${pal.text}">${t('activities.title')}</span>
+                <button onclick="openAddActivityModal('${child.id}')" class="text-xs font-bold hover:underline" style="color: ${pal.accent}">+ ${t('activities.addActivity')}</button>
             `;
             body.appendChild(actTitleRow);
 
@@ -974,30 +1042,33 @@ class StudentClassManager {
 
             if (childActs.length === 0) {
                 const noAct = document.createElement('p');
-                noAct.className = 'text-xs text-gray-400 italic py-1';
+                noAct.className = 'text-xs text-gray-400 italic py-2 text-center bg-white/40 rounded-lg';
                 noAct.textContent = t('activities.noActivities');
                 actList.appendChild(noAct);
             } else {
                 childActs.forEach(act => {
                     const actRow = document.createElement('div');
-                    actRow.className = 'flex justify-between items-center text-xs p-2 bg-gray-50 rounded border hover:bg-gray-100';
+                    actRow.className = 'flex justify-between items-center text-xs p-2 bg-white/90 rounded-xl border hover:bg-white shadow-2xs transition';
+                    actRow.style.borderColor = pal.border;
 
                     const actInfo = document.createElement('div');
                     actInfo.className = 'flex flex-col';
                     actInfo.innerHTML = `
-                        <span class="font-medium text-gray-800">${escapeHtml(act.name)}</span>
+                        <span class="font-semibold text-gray-800">${escapeHtml(act.name)}</span>
                         ${act.instructor ? `<span class="text-gray-500 text-[10px]">${escapeHtml(act.instructor)}</span>` : ''}
                     `;
 
                     const actRight = document.createElement('div');
-                    actRight.className = 'flex items-center gap-2';
+                    actRight.className = 'flex items-center gap-1.5';
 
                     const priceBadge = document.createElement('span');
-                    priceBadge.className = 'font-semibold text-blue-700 bg-blue-50 px-2 py-0.5 rounded';
+                    priceBadge.className = 'font-bold px-2 py-0.5 rounded-lg text-xs';
+                    priceBadge.style.backgroundColor = pal.headerBg;
+                    priceBadge.style.color = pal.accent;
                     priceBadge.textContent = this.formatCurrency(act.price);
 
                     const delActBtn = document.createElement('button');
-                    delActBtn.className = 'text-red-400 hover:text-red-600 font-bold px-1';
+                    delActBtn.className = 'text-red-400 hover:text-red-600 font-bold px-1 text-sm';
                     delActBtn.textContent = '×';
                     delActBtn.title = t('classDetails.delete');
                     delActBtn.onclick = () => classManager.deleteActivity(act.id);
@@ -1028,7 +1099,8 @@ class StudentClassManager {
         let totalClassesAll = 0;
         let totalCostAll = 0;
 
-        this.children.forEach(child => {
+        this.children.forEach((child, idx) => {
+            const pal = this.getChildPalette(child.id, idx);
             const monthlyClasses = this.getMonthlyClasses(child.id, this.currentMonth);
             const activeClasses = monthlyClasses.filter(c => c.status !== 'cancelled');
             const childDefaultPrice = this.getChildPrice(child.id);
@@ -1038,26 +1110,30 @@ class StudentClassManager {
             totalCostAll += childTotal;
 
             const card = document.createElement('div');
-            card.className = 'p-5 rounded-xl border bg-white shadow-sm flex flex-col justify-between';
-            card.style.borderLeft = `5px solid ${child.color || '#3B82F6'}`;
+            card.className = 'p-5 rounded-2xl border shadow-sm flex flex-col justify-between transition-all hover:shadow-md';
+            card.style.backgroundColor = pal.bg;
+            card.style.borderColor = pal.border;
+            card.style.borderLeft = `5px solid ${child.color || pal.accent}`;
 
             const header = document.createElement('div');
-            header.className = 'flex justify-between items-center mb-3';
+            header.className = 'flex justify-between items-center mb-3 pb-2 border-b';
+            header.style.borderColor = pal.border;
             header.innerHTML = `
-                <h3 class="font-bold text-gray-800 text-lg">${escapeHtml(child.name)}</h3>
-                <span class="text-xs px-2.5 py-1 rounded-full font-semibold" style="background-color: ${child.color}20; color: ${child.color};">${activeClasses.length} ${t('reports.classes')}</span>
+                <h3 class="font-bold text-lg" style="color: ${pal.text}">${escapeHtml(child.name)}</h3>
+                <span class="text-xs px-3 py-1 rounded-full font-bold shadow-2xs" style="background-color: ${pal.headerBg}; color: ${pal.accent};">${activeClasses.length} ${t('reports.classes')}</span>
             `;
 
             const stats = document.createElement('div');
-            stats.className = 'space-y-2';
+            stats.className = 'space-y-2.5 bg-white/70 p-3 rounded-xl border';
+            stats.style.borderColor = pal.border;
             stats.innerHTML = `
-                <div class="flex justify-between text-sm">
-                    <span class="text-gray-600">${t('monthlyOverview.classesThisMonth')}</span>
-                    <span class="font-semibold text-gray-800">${activeClasses.length}</span>
+                <div class="flex justify-between text-xs">
+                    <span class="text-gray-600 font-medium">${t('monthlyOverview.classesThisMonth')}</span>
+                    <span class="font-bold text-gray-800">${activeClasses.length}</span>
                 </div>
-                <div class="flex justify-between text-sm">
-                    <span class="text-gray-600">${t('monthlyOverview.monthlyTotal')}</span>
-                    <span class="font-bold text-green-600 text-base">${this.formatCurrency(childTotal)}</span>
+                <div class="flex justify-between text-xs items-center">
+                    <span class="text-gray-600 font-medium">${t('monthlyOverview.monthlyTotal')}</span>
+                    <span class="font-black text-sm" style="color: ${pal.accent}">${this.formatCurrency(childTotal)}</span>
                 </div>
             `;
 
@@ -1082,28 +1158,33 @@ class StudentClassManager {
 
         if (this.children.length === 0) {
             const empty = document.createElement('div');
-            empty.className = 'col-span-full text-center py-6 text-gray-500';
+            empty.className = 'col-span-full text-center py-6 text-gray-500 bg-white/70 rounded-2xl border border-dashed border-gray-300';
             empty.textContent = t('children.noChildren');
             scheduleContainer.appendChild(empty);
             return;
         }
 
-        this.children.forEach(child => {
+        this.children.forEach((child, idx) => {
+            const pal = this.getChildPalette(child.id, idx);
             const childActs = this.getChildActivities(child.id);
             const childSchedules = this.schedules[child.id] || [];
 
             const col = document.createElement('div');
-            col.className = 'bg-white p-5 rounded-xl border shadow-sm space-y-4';
+            col.className = 'p-5 rounded-2xl border shadow-sm space-y-4 transition-all hover:shadow-md';
+            col.style.backgroundColor = pal.bg;
+            col.style.borderColor = pal.border;
+            col.style.borderTop = `4px solid ${child.color || pal.accent}`;
 
             // Column Header
             const colHeader = document.createElement('div');
             colHeader.className = 'flex justify-between items-center border-b pb-3';
+            colHeader.style.borderColor = pal.border;
             colHeader.innerHTML = `
                 <div class="flex items-center gap-2">
-                    <span class="w-3 h-3 rounded-full" style="background-color: ${child.color || '#3B82F6'};"></span>
-                    <h3 class="font-bold text-gray-800 text-lg">${escapeHtml(child.name)}</h3>
+                    <span class="w-3.5 h-3.5 rounded-full shadow-xs" style="background-color: ${child.color || pal.accent};"></span>
+                    <h3 class="font-bold text-base" style="color: ${pal.text}">${escapeHtml(child.name)}</h3>
                 </div>
-                <button onclick="classManager.generateMonthlyClasses('${child.id}')" class="bg-green-600 hover:bg-green-700 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition shadow-sm">
+                <button onclick="classManager.generateMonthlyClasses('${child.id}')" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-3 py-1.5 rounded-xl transition shadow-xs">
                     ⚡ ${t('schedules.generateClasses')}
                 </button>
             `;
@@ -1111,7 +1192,8 @@ class StudentClassManager {
 
             // Add Schedule Box
             const formBox = document.createElement('div');
-            formBox.className = 'p-3 bg-gray-50 rounded-lg space-y-2 border text-sm';
+            formBox.className = 'p-3.5 bg-white/90 rounded-xl space-y-2.5 border text-sm shadow-2xs';
+            formBox.style.borderColor = pal.border;
 
             let actOptionsHtml = '';
             childActs.forEach(act => {
@@ -1119,14 +1201,14 @@ class StudentClassManager {
             });
 
             formBox.innerHTML = `
-                <div class="font-semibold text-gray-700 text-xs mb-1">${t('schedules.addScheduleTitle')}</div>
+                <div class="font-bold text-xs" style="color: ${pal.text}">${t('schedules.addScheduleTitle')}</div>
                 ${childActs.length > 1 ? `
-                    <select id="sch_act_${child.id}" class="w-full px-3 py-1.5 border rounded-md text-sm mb-2 bg-white">
+                    <select id="sch_act_${child.id}" class="w-full px-3 py-1.5 border rounded-lg text-xs mb-2 bg-white">
                         ${actOptionsHtml}
                     </select>
                 ` : `<input type="hidden" id="sch_act_${child.id}" value="${childActs[0] ? childActs[0].id : ''}">`}
                 <div class="grid grid-cols-2 gap-2">
-                    <select id="sch_day_${child.id}" class="px-3 py-1.5 border rounded-md text-sm bg-white">
+                    <select id="sch_day_${child.id}" class="px-3 py-1.5 border rounded-lg text-xs bg-white">
                         <option value="monday">${t('schedules.monday')}</option>
                         <option value="tuesday">${t('schedules.tuesday')}</option>
                         <option value="wednesday">${t('schedules.wednesday')}</option>
@@ -1135,9 +1217,9 @@ class StudentClassManager {
                         <option value="saturday">${t('schedules.saturday')}</option>
                         <option value="sunday">${t('schedules.sunday')}</option>
                     </select>
-                    <input type="time" id="sch_time_${child.id}" class="px-3 py-1.5 border rounded-md text-sm bg-white" value="16:00">
+                    <input type="time" id="sch_time_${child.id}" class="px-3 py-1.5 border rounded-lg text-xs bg-white" value="16:00">
                 </div>
-                <button onclick="handleScheduleAdd('${child.id}')" class="w-full mt-2 bg-blue-600 hover:bg-blue-700 text-white font-medium py-1.5 rounded-md text-xs transition">
+                <button onclick="handleScheduleAdd('${child.id}')" class="w-full mt-2 text-white font-bold py-1.5 rounded-lg text-xs transition shadow-xs" style="background-color: ${pal.accent}">
                     + ${t('schedules.addScheduleBtn')}
                 </button>
             `;
@@ -1149,7 +1231,7 @@ class StudentClassManager {
 
             if (childSchedules.length === 0) {
                 const emptySch = document.createElement('p');
-                emptySch.className = 'text-xs text-gray-400 italic text-center py-2';
+                emptySch.className = 'text-xs text-gray-400 italic text-center py-3 bg-white/40 rounded-xl';
                 emptySch.textContent = t('schedules.noSchedules');
                 list.appendChild(emptySch);
             } else {
@@ -1158,13 +1240,14 @@ class StudentClassManager {
                     const actName = act ? act.name : '';
 
                     const row = document.createElement('div');
-                    row.className = 'p-2.5 bg-gray-50 rounded-lg flex justify-between items-center text-xs border';
+                    row.className = 'p-2.5 bg-white/90 rounded-xl flex justify-between items-center text-xs border shadow-2xs';
+                    row.style.borderColor = pal.border;
                     row.innerHTML = `
                         <div class="flex flex-col">
-                            <span class="font-semibold text-gray-800">${this.getDayDisplayName(sch.day)} ${t('schedules.at')} ${escapeHtml(sch.time)}</span>
-                            ${actName ? `<span class="text-blue-600 text-[11px]">${escapeHtml(actName)}</span>` : ''}
+                            <span class="font-bold text-gray-800">${this.getDayDisplayName(sch.day)} ${t('schedules.at')} ${escapeHtml(sch.time)}</span>
+                            ${actName ? `<span class="text-xs font-semibold" style="color: ${pal.accent}">${escapeHtml(actName)}</span>` : ''}
                         </div>
-                        <button onclick="classManager.removeSchedule('${child.id}', ${sch.id})" class="text-red-500 hover:text-red-700 font-bold px-1">
+                        <button onclick="classManager.removeSchedule('${child.id}', ${sch.id})" class="text-red-500 hover:text-red-700 font-bold px-1.5 py-0.5 rounded hover:bg-red-50">
                             ${t('schedules.remove')}
                         </button>
                     `;
@@ -1231,27 +1314,32 @@ class StudentClassManager {
 
         if (visibleChildren.length === 0) {
             const p = document.createElement('p');
-            p.className = 'text-gray-500 text-center py-6 col-span-full';
+            p.className = 'text-gray-500 text-center py-6 col-span-full bg-white/70 rounded-2xl border border-dashed border-gray-300';
             p.textContent = t('classDetails.noClasses');
             container.appendChild(p);
             return;
         }
 
-        visibleChildren.forEach(child => {
+        visibleChildren.forEach((child, idx) => {
+            const pal = this.getChildPalette(child.id, idx);
             const monthlyClasses = this.getMonthlyClasses(child.id, this.currentMonth);
             const childDefaultPrice = this.getChildPrice(child.id);
 
             const col = document.createElement('div');
-            col.className = 'bg-white p-5 rounded-xl border shadow-sm flex flex-col';
+            col.className = 'p-5 rounded-2xl border shadow-sm flex flex-col transition-all hover:shadow-md';
+            col.style.backgroundColor = pal.bg;
+            col.style.borderColor = pal.border;
+            col.style.borderTop = `4px solid ${child.color || pal.accent}`;
 
             const header = document.createElement('div');
             header.className = 'flex justify-between items-center mb-4 pb-2 border-b';
+            header.style.borderColor = pal.border;
             header.innerHTML = `
                 <div class="flex items-center gap-2">
-                    <span class="w-3 h-3 rounded-full" style="background-color: ${child.color || '#3B82F6'};"></span>
-                    <h3 class="font-bold text-gray-800 text-lg">${escapeHtml(child.name)}</h3>
+                    <span class="w-3.5 h-3.5 rounded-full shadow-xs" style="background-color: ${child.color || pal.accent};"></span>
+                    <h3 class="font-bold text-base" style="color: ${pal.text}">${escapeHtml(child.name)}</h3>
                 </div>
-                <span class="text-xs bg-gray-100 text-gray-700 px-2.5 py-1 rounded-full font-medium">
+                <span class="text-xs px-2.5 py-1 rounded-full font-bold shadow-2xs" style="background-color: ${pal.headerBg}; color: ${pal.accent};">
                     ${monthlyClasses.length} ${t('reports.classes')}
                 </span>
             `;
@@ -1262,7 +1350,7 @@ class StudentClassManager {
 
             if (monthlyClasses.length === 0) {
                 const noCls = document.createElement('p');
-                noCls.className = 'text-sm text-gray-400 italic text-center py-6';
+                noCls.className = 'text-xs text-gray-400 italic text-center py-6 bg-white/40 rounded-xl';
                 noCls.textContent = t('classDetails.noClasses');
                 list.appendChild(noCls);
             } else {
@@ -1273,39 +1361,40 @@ class StudentClassManager {
                     const sessionPrice = cls.price !== undefined && cls.price !== 0 ? cls.price : childDefaultPrice;
 
                     const row = document.createElement('div');
-                    row.className = `p-3 rounded-lg border flex justify-between items-center transition ${isCancelled ? 'bg-red-50/50 border-red-200 opacity-60' : 'bg-gray-50 hover:bg-gray-100'}`;
+                    row.className = `p-3 rounded-xl border flex justify-between items-center transition shadow-2xs ${isCancelled ? 'bg-red-50/70 border-red-200 opacity-60' : 'bg-white/95 hover:bg-white'}`;
+                    row.style.borderColor = isCancelled ? '#FECACA' : pal.border;
 
                     const info = document.createElement('div');
                     info.className = 'space-y-0.5';
 
                     const dateLine = document.createElement('div');
-                    dateLine.className = `font-medium text-sm ${isCancelled ? 'line-through text-gray-500' : 'text-gray-800'}`;
+                    dateLine.className = `font-bold text-xs ${isCancelled ? 'line-through text-gray-500' : 'text-gray-800'}`;
                     dateLine.textContent = this.formatDisplayDate(cls.date);
 
                     const subLine = document.createElement('div');
-                    subLine.className = 'text-xs flex items-center gap-2';
+                    subLine.className = 'text-[11px] flex items-center gap-2';
                     subLine.innerHTML = `
-                        <span class="text-blue-600 font-medium">${t('classDetails.at')} ${escapeHtml(cls.time)}</span>
-                        ${actName ? `<span class="text-gray-600">• ${escapeHtml(actName)}</span>` : ''}
-                        <span class="font-bold text-green-700">• ${this.formatCurrency(sessionPrice)}</span>
+                        <span class="font-semibold" style="color: ${pal.accent}">${t('classDetails.at')} ${escapeHtml(cls.time)}</span>
+                        ${actName ? `<span class="text-gray-600 font-medium">• ${escapeHtml(actName)}</span>` : ''}
+                        <span class="font-bold text-emerald-700">• ${this.formatCurrency(sessionPrice)}</span>
                     `;
 
                     info.appendChild(dateLine);
                     info.appendChild(subLine);
 
                     const actions = document.createElement('div');
-                    actions.className = 'flex items-center gap-2';
+                    actions.className = 'flex items-center gap-1.5';
 
                     // Status Toggle Button
                     const statusBtn = document.createElement('button');
-                    statusBtn.className = `text-xs px-2 py-1 rounded font-medium ${isCancelled ? 'bg-gray-200 text-gray-700' : 'bg-green-100 text-green-800'}`;
+                    statusBtn.className = `text-[11px] px-2.5 py-1 rounded-lg font-bold shadow-2xs transition ${isCancelled ? 'bg-gray-200 text-gray-700' : 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200'}`;
                     statusBtn.textContent = isCancelled ? t('classDetails.statusCancelled') : t('classDetails.statusCompleted');
                     statusBtn.title = 'Click to toggle completed / cancelled';
                     statusBtn.onclick = () => classManager.toggleSessionStatus(child.id, cls.id);
 
                     // Delete Button
                     const delBtn = document.createElement('button');
-                    delBtn.className = 'text-red-500 hover:text-red-700 p-1 rounded text-sm';
+                    delBtn.className = 'text-red-500 hover:text-red-700 p-1 rounded-lg hover:bg-red-50 text-sm';
                     delBtn.title = t('classDetails.delete');
                     delBtn.innerHTML = '🗑️';
                     delBtn.onclick = () => classManager.removeClass(child.id, cls.id);
@@ -1331,29 +1420,34 @@ class StudentClassManager {
         reportsContainer.textContent = '';
         const monthName = this.getMonthName(this.currentMonth);
 
-        this.children.forEach(child => {
+        this.children.forEach((child, idx) => {
+            const pal = this.getChildPalette(child.id, idx);
             const card = document.createElement('div');
-            card.className = 'border rounded-xl p-5 bg-white shadow-sm space-y-4';
+            card.className = 'border rounded-2xl p-5 shadow-sm space-y-4 transition-all hover:shadow-md';
+            card.style.backgroundColor = pal.bg;
+            card.style.borderColor = pal.border;
+            card.style.borderTop = `4px solid ${child.color || pal.accent}`;
 
             const header = document.createElement('div');
             header.className = 'flex justify-between items-center border-b pb-3';
+            header.style.borderColor = pal.border;
             header.innerHTML = `
                 <div class="flex items-center gap-2">
-                    <span class="w-3 h-3 rounded-full" style="background-color: ${child.color || '#3B82F6'};"></span>
-                    <h3 class="font-bold text-gray-800 text-lg">${t('reports.childReport', { name: child.name })}</h3>
+                    <span class="w-3.5 h-3.5 rounded-full shadow-xs" style="background-color: ${child.color || pal.accent};"></span>
+                    <h3 class="font-bold text-base" style="color: ${pal.text}">${t('reports.childReport', { name: child.name })}</h3>
                 </div>
                 <div class="flex items-center gap-1.5 flex-wrap">
-                    <button onclick="classManager.downloadReport('${child.id}')" class="bg-blue-600 hover:bg-blue-700 text-white px-2.5 py-1.5 rounded-lg text-xs font-medium transition">
+                    <button onclick="classManager.downloadReport('${child.id}')" class="text-white px-2.5 py-1.5 rounded-xl text-xs font-bold transition shadow-xs" style="background-color: ${pal.accent}">
                         📥 ${t('reports.download')}
                     </button>
-                    <button onclick="classManager.shareWhatsApp('${child.id}')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-2.5 py-1.5 rounded-lg text-xs font-medium transition" title="${t('reports.shareWhatsApp')}">
+                    <button onclick="classManager.shareWhatsApp('${child.id}')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-2.5 py-1.5 rounded-xl text-xs font-bold transition shadow-xs" title="${t('reports.shareWhatsApp')}">
                         💬 WhatsApp
                     </button>
                 </div>
             `;
             card.appendChild(header);
 
-            const content = this._buildDynamicReportHtml(child, monthName);
+            const content = this._buildDynamicReportHtml(child, monthName, pal);
             card.appendChild(content);
 
             reportsContainer.appendChild(card);
@@ -1363,7 +1457,8 @@ class StudentClassManager {
         this.renderCombinedReport(monthName);
     }
 
-    _buildDynamicReportHtml(child, monthName) {
+    _buildDynamicReportHtml(child, monthName, pal) {
+        if (!pal) pal = this.getChildPalette(child.id);
         const monthlyClasses = this.getMonthlyClasses(child.id, this.currentMonth);
         const activeClasses = monthlyClasses.filter(c => c.status !== 'cancelled');
         const childDefaultPrice = this.getChildPrice(child.id);
@@ -1374,19 +1469,20 @@ class StudentClassManager {
 
         // Overview stats
         const stats = document.createElement('div');
-        stats.className = 'p-3 bg-gray-50 rounded-lg space-y-1';
+        stats.className = 'p-3.5 bg-white/90 rounded-xl space-y-1.5 border shadow-2xs';
+        stats.style.borderColor = pal.border;
         stats.innerHTML = `
-            <div class="flex justify-between">
-                <span class="text-gray-600">${t('reports.totalClasses')}</span>
-                <span class="font-semibold text-gray-800">${activeClasses.length}</span>
+            <div class="flex justify-between text-xs">
+                <span class="text-gray-600 font-medium">${t('reports.totalClasses')}</span>
+                <span class="font-bold text-gray-800">${activeClasses.length}</span>
             </div>
-            <div class="flex justify-between">
-                <span class="text-gray-600">${t('reports.pricePerClass')}</span>
-                <span class="font-semibold text-gray-800">${this.formatCurrency(childDefaultPrice)}</span>
+            <div class="flex justify-between text-xs">
+                <span class="text-gray-600 font-medium">${t('reports.pricePerClass')}</span>
+                <span class="font-bold text-gray-800">${this.formatCurrency(childDefaultPrice)}</span>
             </div>
-            <div class="flex justify-between">
-                <span class="text-gray-600">${t('reports.totalAmount')}</span>
-                <span class="font-bold text-green-600 text-base">${this.formatCurrency(childTotal)}</span>
+            <div class="flex justify-between text-xs items-center pt-1 border-t" style="border-color: ${pal.border}">
+                <span class="text-gray-700 font-bold">${t('reports.totalAmount')}</span>
+                <span class="font-black text-sm" style="color: ${pal.accent}">${this.formatCurrency(childTotal)}</span>
             </div>
         `;
         wrapper.appendChild(stats);
@@ -1395,10 +1491,12 @@ class StudentClassManager {
         const acts = this.getChildActivities(child.id);
         if (acts.length > 0) {
             const breakdown = document.createElement('div');
-            breakdown.className = 'space-y-1.5 text-xs';
+            breakdown.className = 'space-y-1.5 text-xs bg-white/70 p-3 rounded-xl border';
+            breakdown.style.borderColor = pal.border;
 
             const breakTitle = document.createElement('div');
-            breakTitle.className = 'font-semibold text-gray-700';
+            breakTitle.className = 'font-bold'
+            breakTitle.style.color = pal.text;
             breakTitle.textContent = t('reports.byActivity');
             breakdown.appendChild(breakTitle);
 
@@ -1407,10 +1505,10 @@ class StudentClassManager {
                 if (actClasses.length > 0) {
                     const actTotal = actClasses.reduce((sum, c) => sum + (c.price || 0), 0);
                     const row = document.createElement('div');
-                    row.className = 'flex justify-between py-1 border-b border-gray-100';
+                    row.className = 'flex justify-between py-1 border-b border-gray-100 last:border-b-0';
                     row.innerHTML = `
                         <span class="text-gray-600">• ${escapeHtml(act.name)} (${actClasses.length} ${t('reports.classes')})</span>
-                        <span class="font-medium text-gray-800">${this.formatCurrency(actTotal)}</span>
+                        <span class="font-bold text-gray-800">${this.formatCurrency(actTotal)}</span>
                     `;
                     breakdown.appendChild(row);
                 }
@@ -1424,7 +1522,8 @@ class StudentClassManager {
             detailsWrap.className = 'mt-3';
 
             const detailsHeader = document.createElement('div');
-            detailsHeader.className = 'font-semibold text-xs text-gray-700 mb-1';
+            detailsHeader.className = 'font-bold text-xs mb-1.5 px-1';
+            detailsHeader.style.color = pal.text;
             detailsHeader.textContent = t('reports.classDetails');
             detailsWrap.appendChild(detailsHeader);
 
@@ -1436,10 +1535,11 @@ class StudentClassManager {
                 const isCancelled = cls.status === 'cancelled';
                 const sessionPrice = cls.price !== undefined && cls.price !== 0 ? cls.price : childDefaultPrice;
                 const entry = document.createElement('div');
-                entry.className = `text-xs py-1 px-2 rounded flex justify-between ${isCancelled ? 'bg-red-50 text-gray-400 line-through' : 'bg-gray-50 text-gray-700'}`;
+                entry.className = `text-xs py-1.5 px-2.5 rounded-lg flex justify-between border shadow-2xs ${isCancelled ? 'bg-red-50 text-gray-400 line-through border-red-200' : 'bg-white text-gray-700'}`;
+                entry.style.borderColor = isCancelled ? '#FECACA' : pal.border;
                 entry.innerHTML = `
-                    <span>${this.formatDisplayDate(cls.date, cls.time)} ${act ? `(${escapeHtml(act.name)})` : ''}</span>
-                    <span class="font-medium">${this.formatCurrency(sessionPrice)}</span>
+                    <span class="font-medium">${this.formatDisplayDate(cls.date, cls.time)} ${act ? `(${escapeHtml(act.name)})` : ''}</span>
+                    <span class="font-bold">${this.formatCurrency(sessionPrice)}</span>
                 `;
                 list.appendChild(entry);
             });
