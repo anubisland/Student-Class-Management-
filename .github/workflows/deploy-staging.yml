@@ -6,6 +6,11 @@ on:
     paths:
       - 'index.html'
       - 'script.js'
+      - 'i18n.js'
+      - 'manifest.json'
+      - 'sw.js'
+      - 'icons/**'
+      - 'favicon.*'
       - '.github/workflows/deploy-staging.yml'
   workflow_dispatch:
 

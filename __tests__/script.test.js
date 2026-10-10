@@ -474,3 +474,80 @@ describe('showStatus', () => {
     expect(document.getElementById('saveStatus').textContent).toBe('Test message');
   });
 });
+
+describe('Dynamic Multi-Child & Activities Features', () => {
+  let mgr;
+  beforeEach(() => { mgr = createManager(); });
+
+  test('addChild adds a new child profile with default activity', () => {
+    const newChild = mgr.addChild('Omar', '#10B981');
+    expect(newChild).not.toBeNull();
+    expect(newChild.name).toBe('Omar');
+    expect(mgr.children.some(c => c.name === 'Omar')).toBe(true);
+    expect(mgr.getChildActivities(newChild.id).length).toBeGreaterThan(0);
+  });
+
+  test('editChild updates name and color', () => {
+    const child = mgr.children[0];
+    mgr.editChild(child.id, 'Kareem Ahmed', '#EF4444');
+    const updated = mgr.getChildById(child.id);
+    expect(updated.name).toBe('Kareem Ahmed');
+    expect(updated.color).toBe('#EF4444');
+  });
+
+  test('addActivity adds specific activity with custom price', () => {
+    const child = mgr.children[0];
+    const act = mgr.addActivity(child.id, 'Swimming Lessons', 75.0, 'Coach Sam');
+    expect(act).not.toBeNull();
+    expect(act.name).toBe('Swimming Lessons');
+    expect(act.price).toBe(75.0);
+    expect(act.instructor).toBe('Coach Sam');
+  });
+
+  test('toggleSessionStatus flips between completed and cancelled', () => {
+    const childId = 'kareem';
+    mgr.addClassToDatabase(childId, '2026-04-10', '15:00', 50, 'completed');
+    const sess = mgr.classes[childId][0];
+    expect(sess.status).toBe('completed');
+
+    mgr.toggleSessionStatus(childId, sess.id);
+    expect(mgr.classes[childId][0].status).toBe('cancelled');
+
+    mgr.toggleSessionStatus(childId, sess.id);
+    expect(mgr.classes[childId][0].status).toBe('completed');
+  });
+
+  test('formatCurrency formats according to selected currency', () => {
+    mgr.settings.currency = 'SAR';
+    expect(mgr.formatCurrency(150)).toBe('150.00 SAR');
+
+    mgr.settings.currency = '$';
+    expect(mgr.formatCurrency(50)).toBe('$50.00');
+  });
+
+  test('importBackupJson imports valid backup structure', () => {
+    const backupData = {
+      version: '2.0',
+      settings: { familyName: 'Nour Family', currency: 'EGP' },
+      children: [
+        { id: 'c1', name: 'Youssef', color: '#3B82F6' },
+        { id: 'c2', name: 'Farah', color: '#EC4899' },
+        { id: 'c3', name: 'Aly', color: '#10B981' }
+      ],
+      activities: [
+        { id: 'a1', childId: 'c1', name: 'English', price: 60 },
+        { id: 'a2', childId: 'c2', name: 'Math', price: 70 },
+        { id: 'a3', childId: 'c3', name: 'French', price: 80 }
+      ],
+      classes: {},
+      schedules: {}
+    };
+
+    const success = mgr.importBackupJson(JSON.stringify(backupData));
+    expect(success).toBe(true);
+    expect(mgr.children.length).toBe(3);
+    expect(mgr.settings.familyName).toBe('Nour Family');
+    expect(mgr.settings.currency).toBe('EGP');
+  });
+});
+

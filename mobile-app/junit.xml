@@ -1,0 +1,777 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="jest tests" tests="371" failures="0" errors="0" time="2.46">
+  <testsuite name="scheduleHelpers" errors="0" failures="0" skipped="0" timestamp="2026-01-27T03:44:02" time="1.619" tests="30">
+    <testcase classname="scheduleHelpers DAYS_OF_WEEK contains all seven days" name="scheduleHelpers DAYS_OF_WEEK contains all seven days" time="0.008">
+    </testcase>
+    <testcase classname="scheduleHelpers DAYS_OF_WEEK starts with Monday" name="scheduleHelpers DAYS_OF_WEEK starts with Monday" time="0">
+    </testcase>
+    <testcase classname="scheduleHelpers CALENDAR_DAY_LABELS contains all seven short labels" name="scheduleHelpers CALENDAR_DAY_LABELS contains all seven short labels" time="0.001">
+    </testcase>
+    <testcase classname="scheduleHelpers CALENDAR_DAY_LABELS starts with Sunday" name="scheduleHelpers CALENDAR_DAY_LABELS starts with Sunday" time="0.001">
+    </testcase>
+    <testcase classname="scheduleHelpers createSchedule creates schedule with all properties" name="scheduleHelpers createSchedule creates schedule with all properties" time="0.002">
+    </testcase>
+    <testcase classname="scheduleHelpers createSchedule generates unique IDs" name="scheduleHelpers createSchedule generates unique IDs" time="0.001">
+    </testcase>
+    <testcase classname="scheduleHelpers addScheduleToStudent adds schedule to existing student" name="scheduleHelpers addScheduleToStudent adds schedule to existing student" time="0.001">
+    </testcase>
+    <testcase classname="scheduleHelpers addScheduleToStudent creates array for new student" name="scheduleHelpers addScheduleToStudent creates array for new student" time="0">
+    </testcase>
+    <testcase classname="scheduleHelpers addScheduleToStudent preserves other students" name="scheduleHelpers addScheduleToStudent preserves other students" time="0">
+    </testcase>
+    <testcase classname="scheduleHelpers removeScheduleFromStudent removes schedule by ID" name="scheduleHelpers removeScheduleFromStudent removes schedule by ID" time="0.001">
+    </testcase>
+    <testcase classname="scheduleHelpers removeScheduleFromStudent preserves other students" name="scheduleHelpers removeScheduleFromStudent preserves other students" time="0">
+    </testcase>
+    <testcase classname="scheduleHelpers removeScheduleFromStudent handles non-existent student" name="scheduleHelpers removeScheduleFromStudent handles non-existent student" time="0">
+    </testcase>
+    <testcase classname="scheduleHelpers removeScheduleFromStudent handles non-existent schedule ID" name="scheduleHelpers removeScheduleFromStudent handles non-existent schedule ID" time="0">
+    </testcase>
+    <testcase classname="scheduleHelpers hasSchedules returns true for student with schedules" name="scheduleHelpers hasSchedules returns true for student with schedules" time="0">
+    </testcase>
+    <testcase classname="scheduleHelpers hasSchedules returns false for student without schedules" name="scheduleHelpers hasSchedules returns false for student without schedules" time="0.001">
+    </testcase>
+    <testcase classname="scheduleHelpers hasSchedules returns false for non-existent student" name="scheduleHelpers hasSchedules returns false for non-existent student" time="0">
+    </testcase>
+    <testcase classname="scheduleHelpers hasAnySchedules returns true when any student has schedules" name="scheduleHelpers hasAnySchedules returns true when any student has schedules" time="0">
+    </testcase>
+    <testcase classname="scheduleHelpers hasAnySchedules returns false when all students have empty schedules" name="scheduleHelpers hasAnySchedules returns false when all students have empty schedules" time="0.001">
+    </testcase>
+    <testcase classname="scheduleHelpers hasAnySchedules returns false for empty object" name="scheduleHelpers hasAnySchedules returns false for empty object" time="0">
+    </testcase>
+    <testcase classname="scheduleHelpers getScheduleCount returns correct count for student" name="scheduleHelpers getScheduleCount returns correct count for student" time="0">
+    </testcase>
+    <testcase classname="scheduleHelpers getScheduleCount returns 0 for non-existent student" name="scheduleHelpers getScheduleCount returns 0 for non-existent student" time="0">
+    </testcase>
+    <testcase classname="scheduleHelpers getScheduleCount returns 0 for empty array" name="scheduleHelpers getScheduleCount returns 0 for empty array" time="0.001">
+    </testcase>
+    <testcase classname="scheduleHelpers scheduleExists returns true for existing schedule" name="scheduleHelpers scheduleExists returns true for existing schedule" time="0">
+    </testcase>
+    <testcase classname="scheduleHelpers scheduleExists returns false for non-existing schedule" name="scheduleHelpers scheduleExists returns false for non-existing schedule" time="0">
+    </testcase>
+    <testcase classname="scheduleHelpers scheduleExists returns false for non-existent student" name="scheduleHelpers scheduleExists returns false for non-existent student" time="0.001">
+    </testcase>
+    <testcase classname="scheduleHelpers getSchedulesForDay returns schedules for specific day" name="scheduleHelpers getSchedulesForDay returns schedules for specific day" time="0">
+    </testcase>
+    <testcase classname="scheduleHelpers getSchedulesForDay returns empty array for day with no schedules" name="scheduleHelpers getSchedulesForDay returns empty array for day with no schedules" time="0.001">
+    </testcase>
+    <testcase classname="scheduleHelpers getSchedulesForDay returns schedules from multiple students" name="scheduleHelpers getSchedulesForDay returns schedules from multiple students" time="0">
+    </testcase>
+    <testcase classname="scheduleHelpers formatSchedule formats schedule correctly" name="scheduleHelpers formatSchedule formats schedule correctly" time="0">
+    </testcase>
+    <testcase classname="scheduleHelpers formatSchedule works with different days and times" name="scheduleHelpers formatSchedule works with different days and times" time="0.001">
+    </testcase>
+  </testsuite>
+  <testsuite name="Data Storage Functions" errors="0" failures="0" skipped="0" timestamp="2026-01-27T03:44:02" time="1.746" tests="22">
+    <testcase classname="Data Storage Functions saveToDatabase logic saves data to AsyncStorage successfully" name="Data Storage Functions saveToDatabase logic saves data to AsyncStorage successfully" time="0.012">
+    </testcase>
+    <testcase classname="Data Storage Functions saveToDatabase logic serializes objects correctly" name="Data Storage Functions saveToDatabase logic serializes objects correctly" time="0.001">
+    </testcase>
+    <testcase classname="Data Storage Functions saveToDatabase logic handles nested objects" name="Data Storage Functions saveToDatabase logic handles nested objects" time="0.002">
+    </testcase>
+    <testcase classname="Data Storage Functions saveToDatabase logic overwrites existing data" name="Data Storage Functions saveToDatabase logic overwrites existing data" time="0.001">
+    </testcase>
+    <testcase classname="Data Storage Functions loadFromDatabase logic loads existing data from AsyncStorage" name="Data Storage Functions loadFromDatabase logic loads existing data from AsyncStorage" time="0.001">
+    </testcase>
+    <testcase classname="Data Storage Functions loadFromDatabase logic returns default value when key does not exist" name="Data Storage Functions loadFromDatabase logic returns default value when key does not exist" time="0.001">
+    </testcase>
+    <testcase classname="Data Storage Functions loadFromDatabase logic handles empty storage" name="Data Storage Functions loadFromDatabase logic handles empty storage" time="0.001">
+    </testcase>
+    <testcase classname="Data Storage Functions loadFromDatabase logic loads complex nested data" name="Data Storage Functions loadFromDatabase logic loads complex nested data" time="0.001">
+    </testcase>
+    <testcase classname="Data Storage Functions loadData function behavior loads all three data types with defaults" name="Data Storage Functions loadData function behavior loads all three data types with defaults" time="0.003">
+    </testcase>
+    <testcase classname="Data Storage Functions loadData function behavior loads existing data when available" name="Data Storage Functions loadData function behavior loads existing data when available" time="0.001">
+    </testcase>
+    <testcase classname="Data Storage Functions AsyncStorage operations setItem and getItem work correctly" name="Data Storage Functions AsyncStorage operations setItem and getItem work correctly" time="0.001">
+    </testcase>
+    <testcase classname="Data Storage Functions AsyncStorage operations removeItem removes data" name="Data Storage Functions AsyncStorage operations removeItem removes data" time="0.001">
+    </testcase>
+    <testcase classname="Data Storage Functions AsyncStorage operations clear removes all data" name="Data Storage Functions AsyncStorage operations clear removes all data" time="0">
+    </testcase>
+    <testcase classname="Data Storage Functions AsyncStorage operations getAllKeys returns all stored keys" name="Data Storage Functions AsyncStorage operations getAllKeys returns all stored keys" time="0.001">
+    </testcase>
+    <testcase classname="Data Storage Functions AsyncStorage operations multiGet retrieves multiple values" name="Data Storage Functions AsyncStorage operations multiGet retrieves multiple values" time="0.001">
+    </testcase>
+    <testcase classname="Data Storage Functions AsyncStorage operations multiSet stores multiple values" name="Data Storage Functions AsyncStorage operations multiSet stores multiple values" time="0.003">
+    </testcase>
+    <testcase classname="Data Storage Functions Error handling handles JSON parse errors gracefully" name="Data Storage Functions Error handling handles JSON parse errors gracefully" time="0.023">
+    </testcase>
+    <testcase classname="Data Storage Functions Error handling handles null data" name="Data Storage Functions Error handling handles null data" time="0.001">
+    </testcase>
+    <testcase classname="Data Storage Functions Error handling handles undefined gracefully" name="Data Storage Functions Error handling handles undefined gracefully" time="0">
+    </testcase>
+    <testcase classname="Data Storage Functions Data integrity preserves data types after storage" name="Data Storage Functions Data integrity preserves data types after storage" time="0.001">
+    </testcase>
+    <testcase classname="Data Storage Functions Data integrity handles special characters in data" name="Data Storage Functions Data integrity handles special characters in data" time="0">
+    </testcase>
+    <testcase classname="Data Storage Functions Data integrity handles large data sets" name="Data Storage Functions Data integrity handles large data sets" time="0.001">
+    </testcase>
+  </testsuite>
+  <testsuite name="timeHelpers" errors="0" failures="0" skipped="0" timestamp="2026-01-27T03:44:02" time="1.68" tests="33">
+    <testcase classname="timeHelpers incrementHour increments hour normally" name="timeHelpers incrementHour increments hour normally" time="0.018">
+    </testcase>
+    <testcase classname="timeHelpers incrementHour decrements hour normally" name="timeHelpers incrementHour decrements hour normally" time="0.002">
+    </testcase>
+    <testcase classname="timeHelpers incrementHour wraps at 24 going forward" name="timeHelpers incrementHour wraps at 24 going forward" time="0.001">
+    </testcase>
+    <testcase classname="timeHelpers incrementHour wraps at 0 going backward" name="timeHelpers incrementHour wraps at 0 going backward" time="0">
+    </testcase>
+    <testcase classname="timeHelpers incrementHour handles large increments" name="timeHelpers incrementHour handles large increments" time="0">
+    </testcase>
+    <testcase classname="timeHelpers incrementHour handles large decrements" name="timeHelpers incrementHour handles large decrements" time="0">
+    </testcase>
+    <testcase classname="timeHelpers incrementMinute increments minute normally" name="timeHelpers incrementMinute increments minute normally" time="0">
+    </testcase>
+    <testcase classname="timeHelpers incrementMinute decrements minute normally" name="timeHelpers incrementMinute decrements minute normally" time="0">
+    </testcase>
+    <testcase classname="timeHelpers incrementMinute wraps at 60 going forward" name="timeHelpers incrementMinute wraps at 60 going forward" time="0.001">
+    </testcase>
+    <testcase classname="timeHelpers incrementMinute wraps at 0 going backward" name="timeHelpers incrementMinute wraps at 0 going backward" time="0">
+    </testcase>
+    <testcase classname="timeHelpers incrementMinute handles large increments" name="timeHelpers incrementMinute handles large increments" time="0">
+    </testcase>
+    <testcase classname="timeHelpers incrementMinute handles large decrements" name="timeHelpers incrementMinute handles large decrements" time="0">
+    </testcase>
+    <testcase classname="timeHelpers formatTime formats time with double digits" name="timeHelpers formatTime formats time with double digits" time="0.001">
+    </testcase>
+    <testcase classname="timeHelpers formatTime pads single digit hour" name="timeHelpers formatTime pads single digit hour" time="0">
+    </testcase>
+    <testcase classname="timeHelpers formatTime pads single digit minute" name="timeHelpers formatTime pads single digit minute" time="0">
+    </testcase>
+    <testcase classname="timeHelpers formatTime pads both hour and minute" name="timeHelpers formatTime pads both hour and minute" time="0.001">
+    </testcase>
+    <testcase classname="timeHelpers formatTime formats midnight correctly" name="timeHelpers formatTime formats midnight correctly" time="0.008">
+    </testcase>
+    <testcase classname="timeHelpers formatTime formats last minute of day" name="timeHelpers formatTime formats last minute of day" time="0.001">
+    </testcase>
+    <testcase classname="timeHelpers parseTime parses valid time string" name="timeHelpers parseTime parses valid time string" time="0.011">
+    </testcase>
+    <testcase classname="timeHelpers parseTime parses midnight" name="timeHelpers parseTime parses midnight" time="0.001">
+    </testcase>
+    <testcase classname="timeHelpers parseTime parses end of day" name="timeHelpers parseTime parses end of day" time="0.001">
+    </testcase>
+    <testcase classname="timeHelpers isValidTimeString returns true for valid times" name="timeHelpers isValidTimeString returns true for valid times" time="0.001">
+    </testcase>
+    <testcase classname="timeHelpers isValidTimeString returns false for invalid hours" name="timeHelpers isValidTimeString returns false for invalid hours" time="0.001">
+    </testcase>
+    <testcase classname="timeHelpers isValidTimeString returns false for invalid minutes" name="timeHelpers isValidTimeString returns false for invalid minutes" time="0">
+    </testcase>
+    <testcase classname="timeHelpers isValidTimeString returns false for null/undefined" name="timeHelpers isValidTimeString returns false for null/undefined" time="0.001">
+    </testcase>
+    <testcase classname="timeHelpers isValidTimeString returns false for non-string" name="timeHelpers isValidTimeString returns false for non-string" time="0">
+    </testcase>
+    <testcase classname="timeHelpers isValidTimeString returns false for malformed strings" name="timeHelpers isValidTimeString returns false for malformed strings" time="0.001">
+    </testcase>
+    <testcase classname="timeHelpers compareTime returns negative when time1 &lt; time2" name="timeHelpers compareTime returns negative when time1 &lt; time2" time="0">
+    </testcase>
+    <testcase classname="timeHelpers compareTime returns positive when time1 &gt; time2" name="timeHelpers compareTime returns positive when time1 &gt; time2" time="0.001">
+    </testcase>
+    <testcase classname="timeHelpers compareTime returns 0 when times are equal" name="timeHelpers compareTime returns 0 when times are equal" time="0">
+    </testcase>
+    <testcase classname="timeHelpers QUICK_MINUTES contains expected values" name="timeHelpers QUICK_MINUTES contains expected values" time="0">
+    </testcase>
+    <testcase classname="timeHelpers getNearestQuickMinute returns exact match" name="timeHelpers getNearestQuickMinute returns exact match" time="0.001">
+    </testcase>
+    <testcase classname="timeHelpers getNearestQuickMinute rounds to nearest quick minute" name="timeHelpers getNearestQuickMinute rounds to nearest quick minute" time="0.001">
+    </testcase>
+  </testsuite>
+  <testsuite name="Class Management Integration" errors="0" failures="0" skipped="0" timestamp="2026-01-27T03:44:02" time="1.729" tests="23">
+    <testcase classname="Class Management Integration Class data structure class has all required properties" name="Class Management Integration Class data structure class has all required properties" time="0.015">
+    </testcase>
+    <testcase classname="Class Management Integration Class data structure generated class has additional properties" name="Class Management Integration Class data structure generated class has additional properties" time="0.001">
+    </testcase>
+    <testcase classname="Class Management Integration Class filtering filters classes by month correctly" name="Class Management Integration Class filtering filters classes by month correctly" time="0.001">
+    </testcase>
+    <testcase classname="Class Management Integration Class filtering returns empty array for month with no classes" name="Class Management Integration Class filtering returns empty array for month with no classes" time="0">
+    </testcase>
+    <testcase classname="Class Management Integration Class filtering sorts classes by date descending" name="Class Management Integration Class filtering sorts classes by date descending" time="0.001">
+    </testcase>
+    <testcase classname="Class Management Integration Class filtering filters correctly for different students" name="Class Management Integration Class filtering filters correctly for different students" time="0.001">
+    </testcase>
+    <testcase classname="Class Management Integration Class CRUD operations adds class to empty list" name="Class Management Integration Class CRUD operations adds class to empty list" time="0.001">
+    </testcase>
+    <testcase classname="Class Management Integration Class CRUD operations adds class to existing list" name="Class Management Integration Class CRUD operations adds class to existing list" time="0">
+    </testcase>
+    <testcase classname="Class Management Integration Class CRUD operations removes class by ID" name="Class Management Integration Class CRUD operations removes class by ID" time="0.001">
+    </testcase>
+    <testcase classname="Class Management Integration Class CRUD operations preserves other students when modifying one" name="Class Management Integration Class CRUD operations preserves other students when modifying one" time="0.001">
+    </testcase>
+    <testcase classname="Class Management Integration Date and time formatting formats date correctly" name="Class Management Integration Date and time formatting formats date correctly" time="0">
+    </testcase>
+    <testcase classname="Class Management Integration Date and time formatting pads single digit month" name="Class Management Integration Date and time formatting pads single digit month" time="0">
+    </testcase>
+    <testcase classname="Class Management Integration Date and time formatting formats time correctly" name="Class Management Integration Date and time formatting formats time correctly" time="0">
+    </testcase>
+    <testcase classname="Class Management Integration Date and time formatting pads single digit hour and minute" name="Class Management Integration Date and time formatting pads single digit hour and minute" time="0.001">
+    </testcase>
+    <testcase classname="Class Management Integration Storage persistence persists classes to AsyncStorage" name="Class Management Integration Storage persistence persists classes to AsyncStorage" time="0.001">
+    </testcase>
+    <testcase classname="Class Management Integration Storage persistence loads classes from AsyncStorage" name="Class Management Integration Storage persistence loads classes from AsyncStorage" time="0.001">
+    </testcase>
+    <testcase classname="Class Management Integration Storage persistence handles empty storage with defaults" name="Class Management Integration Storage persistence handles empty storage with defaults" time="0.001">
+    </testcase>
+    <testcase classname="Class Management Integration Statistics calculation calculates student stats correctly" name="Class Management Integration Statistics calculation calculates student stats correctly" time="0.001">
+    </testcase>
+    <testcase classname="Class Management Integration Statistics calculation calculates total revenue from multiple students" name="Class Management Integration Statistics calculation calculates total revenue from multiple students" time="0">
+    </testcase>
+    <testcase classname="Class Management Integration Edge cases handles empty classes object" name="Class Management Integration Edge cases handles empty classes object" time="0.002">
+    </testcase>
+    <testcase classname="Class Management Integration Edge cases handles null classes array" name="Class Management Integration Edge cases handles null classes array" time="0.001">
+    </testcase>
+    <testcase classname="Class Management Integration Edge cases handles class with missing properties" name="Class Management Integration Edge cases handles class with missing properties" time="0.001">
+    </testcase>
+    <testcase classname="Class Management Integration Edge cases handles duplicate class detection" name="Class Management Integration Edge cases handles duplicate class detection" time="0">
+    </testcase>
+  </testsuite>
+  <testsuite name="Time Helper Functions" errors="0" failures="0" skipped="0" timestamp="2026-01-27T03:44:02" time="1.564" tests="30">
+    <testcase classname="Time Helper Functions incrementHour logic increments hour from 10 to 11" name="Time Helper Functions incrementHour logic increments hour from 10 to 11" time="0.019">
+    </testcase>
+    <testcase classname="Time Helper Functions incrementHour logic decrements hour from 10 to 9" name="Time Helper Functions incrementHour logic decrements hour from 10 to 9" time="0.002">
+    </testcase>
+    <testcase classname="Time Helper Functions incrementHour logic wraps hour from 23 to 0" name="Time Helper Functions incrementHour logic wraps hour from 23 to 0" time="0.001">
+    </testcase>
+    <testcase classname="Time Helper Functions incrementHour logic wraps hour from 0 to 23" name="Time Helper Functions incrementHour logic wraps hour from 0 to 23" time="0">
+    </testcase>
+    <testcase classname="Time Helper Functions incrementHour logic handles large positive delta" name="Time Helper Functions incrementHour logic handles large positive delta" time="0.001">
+    </testcase>
+    <testcase classname="Time Helper Functions incrementHour logic handles large negative delta" name="Time Helper Functions incrementHour logic handles large negative delta" time="0.001">
+    </testcase>
+    <testcase classname="Time Helper Functions incrementHour logic handles midnight boundary correctly" name="Time Helper Functions incrementHour logic handles midnight boundary correctly" time="0">
+    </testcase>
+    <testcase classname="Time Helper Functions incrementHour logic handles noon correctly" name="Time Helper Functions incrementHour logic handles noon correctly" time="0">
+    </testcase>
+    <testcase classname="Time Helper Functions incrementMinute logic increments minute from 0 to 5" name="Time Helper Functions incrementMinute logic increments minute from 0 to 5" time="0.001">
+    </testcase>
+    <testcase classname="Time Helper Functions incrementMinute logic decrements minute from 30 to 25" name="Time Helper Functions incrementMinute logic decrements minute from 30 to 25" time="0.001">
+    </testcase>
+    <testcase classname="Time Helper Functions incrementMinute logic wraps minute from 55 to 0" name="Time Helper Functions incrementMinute logic wraps minute from 55 to 0" time="0.001">
+    </testcase>
+    <testcase classname="Time Helper Functions incrementMinute logic wraps minute from 0 to 55" name="Time Helper Functions incrementMinute logic wraps minute from 0 to 55" time="0.001">
+    </testcase>
+    <testcase classname="Time Helper Functions incrementMinute logic handles single increment/decrement" name="Time Helper Functions incrementMinute logic handles single increment/decrement" time="0">
+    </testcase>
+    <testcase classname="Time Helper Functions incrementMinute logic handles wrap from 59 to 4 with delta 5" name="Time Helper Functions incrementMinute logic handles wrap from 59 to 4 with delta 5" time="0">
+    </testcase>
+    <testcase classname="Time Helper Functions incrementMinute logic handles wrap from 4 to 59 with delta -5" name="Time Helper Functions incrementMinute logic handles wrap from 4 to 59 with delta -5" time="0">
+    </testcase>
+    <testcase classname="Time Helper Functions setQuickMinute logic sets minute to 0" name="Time Helper Functions setQuickMinute logic sets minute to 0" time="0">
+    </testcase>
+    <testcase classname="Time Helper Functions setQuickMinute logic sets minute to 15" name="Time Helper Functions setQuickMinute logic sets minute to 15" time="0.001">
+    </testcase>
+    <testcase classname="Time Helper Functions setQuickMinute logic sets minute to 30" name="Time Helper Functions setQuickMinute logic sets minute to 30" time="0">
+    </testcase>
+    <testcase classname="Time Helper Functions setQuickMinute logic sets minute to 45" name="Time Helper Functions setQuickMinute logic sets minute to 45" time="0">
+    </testcase>
+    <testcase classname="Time Helper Functions getFormattedTime logic formats 10:00 correctly" name="Time Helper Functions getFormattedTime logic formats 10:00 correctly" time="0.001">
+    </testcase>
+    <testcase classname="Time Helper Functions getFormattedTime logic formats 09:05 with leading zeros" name="Time Helper Functions getFormattedTime logic formats 09:05 with leading zeros" time="0">
+    </testcase>
+    <testcase classname="Time Helper Functions getFormattedTime logic formats midnight 00:00 correctly" name="Time Helper Functions getFormattedTime logic formats midnight 00:00 correctly" time="0.001">
+    </testcase>
+    <testcase classname="Time Helper Functions getFormattedTime logic formats 23:59 correctly" name="Time Helper Functions getFormattedTime logic formats 23:59 correctly" time="0">
+    </testcase>
+    <testcase classname="Time Helper Functions getFormattedTime logic formats noon 12:00 correctly" name="Time Helper Functions getFormattedTime logic formats noon 12:00 correctly" time="0">
+    </testcase>
+    <testcase classname="Time Helper Functions getFormattedTime logic formats single digit hour and minute" name="Time Helper Functions getFormattedTime logic formats single digit hour and minute" time="0">
+    </testcase>
+    <testcase classname="Time Helper Functions Time edge cases multiple hour increments stay within bounds" name="Time Helper Functions Time edge cases multiple hour increments stay within bounds" time="0">
+    </testcase>
+    <testcase classname="Time Helper Functions Time edge cases multiple minute decrements stay within bounds" name="Time Helper Functions Time edge cases multiple minute decrements stay within bounds" time="0.001">
+    </testcase>
+    <testcase classname="Time Helper Functions Time edge cases 24-hour cycle returns to original" name="Time Helper Functions Time edge cases 24-hour cycle returns to original" time="0">
+    </testcase>
+    <testcase classname="Time Helper Functions Time edge cases 60-minute cycle returns to original" name="Time Helper Functions Time edge cases 60-minute cycle returns to original" time="0">
+    </testcase>
+    <testcase classname="Schedule Time Functions getFormattedScheduleTime logic formats schedule time same as regular time" name="Schedule Time Functions getFormattedScheduleTime logic formats schedule time same as regular time" time="0.001">
+    </testcase>
+  </testsuite>
+  <testsuite name="storageHelpers" errors="0" failures="0" skipped="0" timestamp="2026-01-27T03:44:02" time="1.837" tests="22">
+    <testcase classname="storageHelpers STORAGE_KEYS has correct key values" name="storageHelpers STORAGE_KEYS has correct key values" time="0.012">
+    </testcase>
+    <testcase classname="storageHelpers DEFAULT_VALUES has default prices" name="storageHelpers DEFAULT_VALUES has default prices" time="0.003">
+    </testcase>
+    <testcase classname="storageHelpers DEFAULT_VALUES has empty default classes" name="storageHelpers DEFAULT_VALUES has empty default classes" time="0.001">
+    </testcase>
+    <testcase classname="storageHelpers DEFAULT_VALUES has empty default schedules" name="storageHelpers DEFAULT_VALUES has empty default schedules" time="0">
+    </testcase>
+    <testcase classname="storageHelpers saveToDatabase saves data successfully" name="storageHelpers saveToDatabase saves data successfully" time="0.002">
+    </testcase>
+    <testcase classname="storageHelpers saveToDatabase returns false on error" name="storageHelpers saveToDatabase returns false on error" time="0.102">
+    </testcase>
+    <testcase classname="storageHelpers saveToDatabase saves complex objects" name="storageHelpers saveToDatabase saves complex objects" time="0.001">
+    </testcase>
+    <testcase classname="storageHelpers loadFromDatabase loads existing data" name="storageHelpers loadFromDatabase loads existing data" time="0.001">
+    </testcase>
+    <testcase classname="storageHelpers loadFromDatabase returns default value when key not found" name="storageHelpers loadFromDatabase returns default value when key not found" time="0.002">
+    </testcase>
+    <testcase classname="storageHelpers loadFromDatabase returns empty object by default" name="storageHelpers loadFromDatabase returns empty object by default" time="0.001">
+    </testcase>
+    <testcase classname="storageHelpers loadFromDatabase returns default on parse error" name="storageHelpers loadFromDatabase returns default on parse error" time="0.017">
+    </testcase>
+    <testcase classname="storageHelpers loadAllData loads all data with defaults" name="storageHelpers loadAllData loads all data with defaults" time="0.002">
+    </testcase>
+    <testcase classname="storageHelpers loadAllData loads stored data" name="storageHelpers loadAllData loads stored data" time="0.001">
+    </testcase>
+    <testcase classname="storageHelpers savePrices saves prices to correct key" name="storageHelpers savePrices saves prices to correct key" time="0.001">
+    </testcase>
+    <testcase classname="storageHelpers saveClasses saves classes to correct key" name="storageHelpers saveClasses saves classes to correct key" time="0">
+    </testcase>
+    <testcase classname="storageHelpers saveSchedules saves schedules to correct key" name="storageHelpers saveSchedules saves schedules to correct key" time="0.001">
+    </testcase>
+    <testcase classname="storageHelpers clearAllData clears all storage keys" name="storageHelpers clearAllData clears all storage keys" time="0.001">
+    </testcase>
+    <testcase classname="storageHelpers clearAllData returns true on success" name="storageHelpers clearAllData returns true on success" time="0">
+    </testcase>
+    <testcase classname="storageHelpers clearAllData returns false on error" name="storageHelpers clearAllData returns false on error" time="0.004">
+    </testcase>
+    <testcase classname="storageHelpers updatePrice updates price for student" name="storageHelpers updatePrice updates price for student" time="0.001">
+    </testcase>
+    <testcase classname="storageHelpers updatePrice preserves other prices" name="storageHelpers updatePrice preserves other prices" time="0">
+    </testcase>
+    <testcase classname="storageHelpers updatePrice adds price for new student" name="storageHelpers updatePrice adds price for new student" time="0.001">
+    </testcase>
+  </testsuite>
+  <testsuite name="Report Generation Integration" errors="0" failures="0" skipped="0" timestamp="2026-01-27T03:44:02" time="1.791" tests="15">
+    <testcase classname="Report Generation Integration generateReport generates combined report correctly" name="Report Generation Integration generateReport generates combined report correctly" time="0.088">
+    </testcase>
+    <testcase classname="Report Generation Integration generateReport generates individual student report correctly" name="Report Generation Integration generateReport generates individual student report correctly" time="0.002">
+    </testcase>
+    <testcase classname="Report Generation Integration generateReport calls Share.share with correct parameters" name="Report Generation Integration generateReport calls Share.share with correct parameters" time="0.004">
+    </testcase>
+    <testcase classname="Report Generation Integration downloadReport generates combined download report with grand total" name="Report Generation Integration downloadReport generates combined download report with grand total" time="0.002">
+    </testcase>
+    <testcase classname="Report Generation Integration downloadReport generates individual download report with class details" name="Report Generation Integration downloadReport generates individual download report with class details" time="0.002">
+    </testcase>
+    <testcase classname="Report Generation Integration downloadReport generates filename correctly for combined report" name="Report Generation Integration downloadReport generates filename correctly for combined report" time="0.001">
+    </testcase>
+    <testcase classname="Report Generation Integration downloadReport generates filename correctly for individual report" name="Report Generation Integration downloadReport generates filename correctly for individual report" time="0.001">
+    </testcase>
+    <testcase classname="Report Generation Integration downloadReport includes timestamp in report" name="Report Generation Integration downloadReport includes timestamp in report" time="0.002">
+    </testcase>
+    <testcase classname="Report Generation Integration Report calculations calculates correct totals for zero classes" name="Report Generation Integration Report calculations calculates correct totals for zero classes" time="0.001">
+    </testcase>
+    <testcase classname="Report Generation Integration Report calculations handles missing student data" name="Report Generation Integration Report calculations handles missing student data" time="0">
+    </testcase>
+    <testcase classname="Report Generation Integration Report calculations handles invalid price string" name="Report Generation Integration Report calculations handles invalid price string" time="0">
+    </testcase>
+    <testcase classname="Report Generation Integration Report calculations handles undefined price" name="Report Generation Integration Report calculations handles undefined price" time="0">
+    </testcase>
+    <testcase classname="Report Generation Integration Share functionality Share.share resolves successfully" name="Report Generation Integration Share functionality Share.share resolves successfully" time="0.002">
+    </testcase>
+    <testcase classname="Report Generation Integration Share functionality handles share with long content" name="Report Generation Integration Share functionality handles share with long content" time="0.001">
+    </testcase>
+    <testcase classname="Month name conversion converts all months correctly" name="Month name conversion converts all months correctly" time="0.011">
+    </testcase>
+  </testsuite>
+  <testsuite name="classHelpers" errors="0" failures="0" skipped="0" timestamp="2026-01-27T03:44:02" time="1.807" tests="32">
+    <testcase classname="classHelpers getMonthlyClasses filters classes by month correctly" name="classHelpers getMonthlyClasses filters classes by month correctly" time="0.014">
+    </testcase>
+    <testcase classname="classHelpers getMonthlyClasses returns empty array for month with no classes" name="classHelpers getMonthlyClasses returns empty array for month with no classes" time="0">
+    </testcase>
+    <testcase classname="classHelpers getMonthlyClasses returns empty array for non-existent student" name="classHelpers getMonthlyClasses returns empty array for non-existent student" time="0.001">
+    </testcase>
+    <testcase classname="classHelpers getMonthlyClasses sorts classes in descending order (newest first)" name="classHelpers getMonthlyClasses sorts classes in descending order (newest first)" time="0.001">
+    </testcase>
+    <testcase classname="classHelpers getMonthlyClasses handles null classes object" name="classHelpers getMonthlyClasses handles null classes object" time="0.002">
+    </testcase>
+    <testcase classname="classHelpers getMonthlyClasses handles missing student in classes" name="classHelpers getMonthlyClasses handles missing student in classes" time="0.001">
+    </testcase>
+    <testcase classname="classHelpers getStudentStats calculates correct stats for Kareem in January" name="classHelpers getStudentStats calculates correct stats for Kareem in January" time="0.002">
+    </testcase>
+    <testcase classname="classHelpers getStudentStats calculates correct stats for Sara_Hana in January" name="classHelpers getStudentStats calculates correct stats for Sara_Hana in January" time="0.001">
+    </testcase>
+    <testcase classname="classHelpers getStudentStats returns zero for month with no classes" name="classHelpers getStudentStats returns zero for month with no classes" time="0.001">
+    </testcase>
+    <testcase classname="classHelpers getStudentStats handles missing price (defaults to 0)" name="classHelpers getStudentStats handles missing price (defaults to 0)" time="0">
+    </testcase>
+    <testcase classname="classHelpers getStudentStats handles invalid price string" name="classHelpers getStudentStats handles invalid price string" time="0">
+    </testcase>
+    <testcase classname="classHelpers classExists returns true for existing class" name="classHelpers classExists returns true for existing class" time="0">
+    </testcase>
+    <testcase classname="classHelpers classExists returns false for non-existing class" name="classHelpers classExists returns false for non-existing class" time="0.001">
+    </testcase>
+    <testcase classname="classHelpers classExists handles empty array" name="classHelpers classExists handles empty array" time="0">
+    </testcase>
+    <testcase classname="classHelpers classExists handles null/undefined" name="classHelpers classExists handles null/undefined" time="0">
+    </testcase>
+    <testcase classname="classHelpers createClass creates class with all required properties" name="classHelpers createClass creates class with all required properties" time="0.002">
+    </testcase>
+    <testcase classname="classHelpers createClass creates generated class with complex ID" name="classHelpers createClass creates generated class with complex ID" time="0.001">
+    </testcase>
+    <testcase classname="classHelpers createClass creates manual class with numeric ID" name="classHelpers createClass creates manual class with numeric ID" time="0.001">
+    </testcase>
+    <testcase classname="classHelpers generateClassesForMonth generates classes for schedules" name="classHelpers generateClassesForMonth generates classes for schedules" time="0.091">
+    </testcase>
+    <testcase classname="classHelpers generateClassesForMonth returns empty when no schedules" name="classHelpers generateClassesForMonth returns empty when no schedules" time="0.001">
+    </testcase>
+    <testcase classname="classHelpers generateClassesForMonth skips existing classes (no duplicates)" name="classHelpers generateClassesForMonth skips existing classes (no duplicates)" time="0.006">
+    </testcase>
+    <testcase classname="classHelpers generateClassesForMonth handles null schedules" name="classHelpers generateClassesForMonth handles null schedules" time="0">
+    </testcase>
+    <testcase classname="classHelpers generateClassesForMonth generates classes for correct days" name="classHelpers generateClassesForMonth generates classes for correct days" time="0.004">
+    </testcase>
+    <testcase classname="classHelpers removeClass removes class by ID" name="classHelpers removeClass removes class by ID" time="0.001">
+    </testcase>
+    <testcase classname="classHelpers removeClass preserves other students" name="classHelpers removeClass preserves other students" time="0">
+    </testcase>
+    <testcase classname="classHelpers removeClass handles non-existent student" name="classHelpers removeClass handles non-existent student" time="0">
+    </testcase>
+    <testcase classname="classHelpers removeClass handles non-existent class ID" name="classHelpers removeClass handles non-existent class ID" time="0.001">
+    </testcase>
+    <testcase classname="classHelpers addClassToStudent adds class to existing student" name="classHelpers addClassToStudent adds class to existing student" time="0">
+    </testcase>
+    <testcase classname="classHelpers addClassToStudent creates array for new student" name="classHelpers addClassToStudent creates array for new student" time="0">
+    </testcase>
+    <testcase classname="classHelpers addClassToStudent preserves other students" name="classHelpers addClassToStudent preserves other students" time="0.001">
+    </testcase>
+    <testcase classname="classHelpers calculateMonthlyTotals calculates combined totals" name="classHelpers calculateMonthlyTotals calculates combined totals" time="0.001">
+    </testcase>
+    <testcase classname="classHelpers calculateMonthlyTotals returns zero for empty month" name="classHelpers calculateMonthlyTotals returns zero for empty month" time="0.001">
+    </testcase>
+  </testsuite>
+  <testsuite name="reportHelpers" errors="0" failures="0" skipped="0" timestamp="2026-01-27T03:44:02" time="1.832" tests="18">
+    <testcase classname="reportHelpers STUDENTS contains kareem and saraHana" name="reportHelpers STUDENTS contains kareem and saraHana" time="0.012">
+    </testcase>
+    <testcase classname="reportHelpers STUDENTS has correct structure" name="reportHelpers STUDENTS has correct structure" time="0.002">
+    </testcase>
+    <testcase classname="reportHelpers generateReportText generates combined report" name="reportHelpers generateReportText generates combined report" time="0.06">
+    </testcase>
+    <testcase classname="reportHelpers generateReportText generates individual student report" name="reportHelpers generateReportText generates individual student report" time="0.005">
+    </testcase>
+    <testcase classname="reportHelpers generateReportText handles zero price" name="reportHelpers generateReportText handles zero price" time="0.004">
+    </testcase>
+    <testcase classname="reportHelpers generateReportText handles empty month" name="reportHelpers generateReportText handles empty month" time="0.005">
+    </testcase>
+    <testcase classname="reportHelpers generateDownloadReport generates combined download report" name="reportHelpers generateDownloadReport generates combined download report" time="0.004">
+    </testcase>
+    <testcase classname="reportHelpers generateDownloadReport generates individual student download report" name="reportHelpers generateDownloadReport generates individual student download report" time="0.002">
+    </testcase>
+    <testcase classname="reportHelpers generateDownloadReport includes class details for student with classes" name="reportHelpers generateDownloadReport includes class details for student with classes" time="0.003">
+    </testcase>
+    <testcase classname="reportHelpers generateDownloadReport includes generation timestamp" name="reportHelpers generateDownloadReport includes generation timestamp" time="0.004">
+    </testcase>
+    <testcase classname="reportHelpers generateDownloadReport handles month with no classes" name="reportHelpers generateDownloadReport handles month with no classes" time="0.001">
+    </testcase>
+    <testcase classname="reportHelpers formatCurrency formats positive values" name="reportHelpers formatCurrency formats positive values" time="0.001">
+    </testcase>
+    <testcase classname="reportHelpers formatCurrency formats zero" name="reportHelpers formatCurrency formats zero" time="0">
+    </testcase>
+    <testcase classname="reportHelpers formatCurrency formats decimal values" name="reportHelpers formatCurrency formats decimal values" time="0.001">
+    </testcase>
+    <testcase classname="reportHelpers formatCurrency formats large values" name="reportHelpers formatCurrency formats large values" time="0">
+    </testcase>
+    <testcase classname="reportHelpers getStudentPrice returns formatted price for existing student" name="reportHelpers getStudentPrice returns formatted price for existing student" time="0">
+    </testcase>
+    <testcase classname="reportHelpers getStudentPrice returns $0.00 for missing student" name="reportHelpers getStudentPrice returns $0.00 for missing student" time="0">
+    </testcase>
+    <testcase classname="reportHelpers getStudentPrice returns $0.00 for invalid price" name="reportHelpers getStudentPrice returns $0.00 for invalid price" time="0">
+    </testcase>
+  </testsuite>
+  <testsuite name="Schedule Management Integration" errors="0" failures="0" skipped="0" timestamp="2026-01-27T03:44:02" time="1.801" tests="17">
+    <testcase classname="Schedule Management Integration addSchedule creates a new schedule with correct properties" name="Schedule Management Integration addSchedule creates a new schedule with correct properties" time="0.012">
+    </testcase>
+    <testcase classname="Schedule Management Integration addSchedule adds schedule to existing list" name="Schedule Management Integration addSchedule adds schedule to existing list" time="0.002">
+    </testcase>
+    <testcase classname="Schedule Management Integration addSchedule persists schedule to AsyncStorage" name="Schedule Management Integration addSchedule persists schedule to AsyncStorage" time="0.002">
+    </testcase>
+    <testcase classname="Schedule Management Integration removeSchedule removes schedule by ID" name="Schedule Management Integration removeSchedule removes schedule by ID" time="0.001">
+    </testcase>
+    <testcase classname="Schedule Management Integration removeSchedule handles removing non-existent schedule" name="Schedule Management Integration removeSchedule handles removing non-existent schedule" time="0.008">
+    </testcase>
+    <testcase classname="Schedule Management Integration removeSchedule removes last schedule leaving empty array" name="Schedule Management Integration removeSchedule removes last schedule leaving empty array" time="0.002">
+    </testcase>
+    <testcase classname="Class Management Integration addClass creates a new class with correct properties" name="Class Management Integration addClass creates a new class with correct properties" time="0.003">
+    </testcase>
+    <testcase classname="Class Management Integration addClass adds class to existing list" name="Class Management Integration addClass adds class to existing list" time="0.001">
+    </testcase>
+    <testcase classname="Class Management Integration removeClass removes class by ID" name="Class Management Integration removeClass removes class by ID" time="0.001">
+    </testcase>
+    <testcase classname="Class Management Integration removeClass handles removing non-existent class" name="Class Management Integration removeClass handles removing non-existent class" time="0.001">
+    </testcase>
+    <testcase classname="Class Management Integration generateClassesForStudent generates classes from schedules for a month" name="Class Management Integration generateClassesForStudent generates classes from schedules for a month" time="0.123">
+    </testcase>
+    <testcase classname="Class Management Integration generateClassesForStudent does not create duplicate classes" name="Class Management Integration generateClassesForStudent does not create duplicate classes" time="0.008">
+    </testcase>
+    <testcase classname="Class Management Integration generateClassesForStudent handles empty schedules" name="Class Management Integration generateClassesForStudent handles empty schedules" time="0.001">
+    </testcase>
+    <testcase classname="Class Management Integration generateClasses (all students) generates classes for multiple students" name="Class Management Integration generateClasses (all students) generates classes for multiple students" time="0.016">
+    </testcase>
+    <testcase classname="Class Management Integration generateClasses (all students) validates hasSchedules check" name="Class Management Integration generateClasses (all students) validates hasSchedules check" time="0.001">
+    </testcase>
+    <testcase classname="Alert interactions Alert.alert is called with correct parameters for schedule added" name="Alert interactions Alert.alert is called with correct parameters for schedule added" time="0.007">
+    </testcase>
+    <testcase classname="Alert interactions Alert.alert is called for remove confirmation" name="Alert interactions Alert.alert is called for remove confirmation" time="0.001">
+    </testcase>
+  </testsuite>
+  <testsuite name="dateHelpers" errors="0" failures="0" skipped="0" timestamp="2026-01-27T03:44:02" time="1.833" tests="35">
+    <testcase classname="dateHelpers formatDate formats date correctly with single digit day and month" name="dateHelpers formatDate formats date correctly with single digit day and month" time="0.014">
+    </testcase>
+    <testcase classname="dateHelpers formatDate formats date correctly with double digit day and month" name="dateHelpers formatDate formats date correctly with double digit day and month" time="0">
+    </testcase>
+    <testcase classname="dateHelpers formatDate formats first day of year" name="dateHelpers formatDate formats first day of year" time="0.001">
+    </testcase>
+    <testcase classname="dateHelpers formatDate formats last day of year" name="dateHelpers formatDate formats last day of year" time="0.001">
+    </testcase>
+    <testcase classname="dateHelpers formatDate formats leap year date" name="dateHelpers formatDate formats leap year date" time="0">
+    </testcase>
+    <testcase classname="dateHelpers getMonthName converts January correctly" name="dateHelpers getMonthName converts January correctly" time="0.12">
+    </testcase>
+    <testcase classname="dateHelpers getMonthName converts June correctly" name="dateHelpers getMonthName converts June correctly" time="0.001">
+    </testcase>
+    <testcase classname="dateHelpers getMonthName converts December correctly" name="dateHelpers getMonthName converts December correctly" time="0.001">
+    </testcase>
+    <testcase classname="dateHelpers getMonthName handles different years" name="dateHelpers getMonthName handles different years" time="0.003">
+    </testcase>
+    <testcase classname="dateHelpers getCurrentMonthString returns current month in YYYY-MM format" name="dateHelpers getCurrentMonthString returns current month in YYYY-MM format" time="0.003">
+    </testcase>
+    <testcase classname="dateHelpers navigateMonthString navigates forward one month" name="dateHelpers navigateMonthString navigates forward one month" time="0.01">
+    </testcase>
+    <testcase classname="dateHelpers navigateMonthString navigates backward one month" name="dateHelpers navigateMonthString navigates backward one month" time="0.001">
+    </testcase>
+    <testcase classname="dateHelpers navigateMonthString handles year boundary forward" name="dateHelpers navigateMonthString handles year boundary forward" time="0.001">
+    </testcase>
+    <testcase classname="dateHelpers navigateMonthString handles year boundary backward" name="dateHelpers navigateMonthString handles year boundary backward" time="0">
+    </testcase>
+    <testcase classname="dateHelpers navigateMonthString navigates multiple months" name="dateHelpers navigateMonthString navigates multiple months" time="0.001">
+    </testcase>
+    <testcase classname="dateHelpers getCalendarDays generates correct days for January 2025" name="dateHelpers getCalendarDays generates correct days for January 2025" time="0.002">
+    </testcase>
+    <testcase classname="dateHelpers getCalendarDays generates correct days for February 2024 (leap year)" name="dateHelpers getCalendarDays generates correct days for February 2024 (leap year)" time="0.001">
+    </testcase>
+    <testcase classname="dateHelpers getCalendarDays generates correct days for February 2025 (non-leap year)" name="dateHelpers getCalendarDays generates correct days for February 2025 (non-leap year)" time="0.001">
+    </testcase>
+    <testcase classname="dateHelpers getCalendarDays includes padding for first week" name="dateHelpers getCalendarDays includes padding for first week" time="0.001">
+    </testcase>
+    <testcase classname="dateHelpers getCalendarDays days are in sequential order" name="dateHelpers getCalendarDays days are in sequential order" time="0.004">
+    </testcase>
+    <testcase classname="dateHelpers getDaysInMonth returns 31 for January" name="dateHelpers getDaysInMonth returns 31 for January" time="0.001">
+    </testcase>
+    <testcase classname="dateHelpers getDaysInMonth returns 28 for February in non-leap year" name="dateHelpers getDaysInMonth returns 28 for February in non-leap year" time="0">
+    </testcase>
+    <testcase classname="dateHelpers getDaysInMonth returns 29 for February in leap year" name="dateHelpers getDaysInMonth returns 29 for February in leap year" time="0">
+    </testcase>
+    <testcase classname="dateHelpers getDaysInMonth returns 30 for April" name="dateHelpers getDaysInMonth returns 30 for April" time="0.001">
+    </testcase>
+    <testcase classname="dateHelpers getDaysInMonth returns 31 for December" name="dateHelpers getDaysInMonth returns 31 for December" time="0">
+    </testcase>
+    <testcase classname="dateHelpers isLeapYear returns true for divisible by 4" name="dateHelpers isLeapYear returns true for divisible by 4" time="0.001">
+    </testcase>
+    <testcase classname="dateHelpers isLeapYear returns false for divisible by 100 but not 400" name="dateHelpers isLeapYear returns false for divisible by 100 but not 400" time="0">
+    </testcase>
+    <testcase classname="dateHelpers isLeapYear returns true for divisible by 400" name="dateHelpers isLeapYear returns true for divisible by 400" time="0.001">
+    </testcase>
+    <testcase classname="dateHelpers isLeapYear returns false for non-leap years" name="dateHelpers isLeapYear returns false for non-leap years" time="0">
+    </testcase>
+    <testcase classname="dateHelpers getDayOfWeek returns correct day name" name="dateHelpers getDayOfWeek returns correct day name" time="0.001">
+    </testcase>
+    <testcase classname="dateHelpers getAvailableMonths returns at least 12 months" name="dateHelpers getAvailableMonths returns at least 12 months" time="0.002">
+    </testcase>
+    <testcase classname="dateHelpers getAvailableMonths includes months from existing classes" name="dateHelpers getAvailableMonths includes months from existing classes" time="0.002">
+    </testcase>
+    <testcase classname="dateHelpers getAvailableMonths returns months in sorted order" name="dateHelpers getAvailableMonths returns months in sorted order" time="0.002">
+    </testcase>
+    <testcase classname="dateHelpers getAvailableMonths handles empty classes object" name="dateHelpers getAvailableMonths handles empty classes object" time="0.001">
+    </testcase>
+    <testcase classname="dateHelpers getAvailableMonths handles null/undefined in classes" name="dateHelpers getAvailableMonths handles null/undefined in classes" time="0">
+    </testcase>
+  </testsuite>
+  <testsuite name="Class Generation Functions" errors="0" failures="0" skipped="0" timestamp="2026-01-27T03:44:02" time="1.839" tests="15">
+    <testcase classname="Class Generation Functions generateClassesForStudent logic generates classes for all Mondays in January 2025" name="Class Generation Functions generateClassesForStudent logic generates classes for all Mondays in January 2025" time="0.146">
+    </testcase>
+    <testcase classname="Class Generation Functions generateClassesForStudent logic generates classes for multiple schedules" name="Class Generation Functions generateClassesForStudent logic generates classes for multiple schedules" time="0.01">
+    </testcase>
+    <testcase classname="Class Generation Functions generateClassesForStudent logic detects and skips duplicate classes" name="Class Generation Functions generateClassesForStudent logic detects and skips duplicate classes" time="0.007">
+    </testcase>
+    <testcase classname="Class Generation Functions generateClassesForStudent logic handles empty schedules" name="Class Generation Functions generateClassesForStudent logic handles empty schedules" time="0">
+    </testcase>
+    <testcase classname="Class Generation Functions generateClassesForStudent logic handles schedule for day that does not occur in month" name="Class Generation Functions generateClassesForStudent logic handles schedule for day that does not occur in month" time="0.003">
+    </testcase>
+    <testcase classname="Class Generation Functions generateClasses logic (all students) generates classes for multiple students" name="Class Generation Functions generateClasses logic (all students) generates classes for multiple students" time="0.007">
+    </testcase>
+    <testcase classname="Class Generation Functions generateClasses logic (all students) validates hasSchedules check" name="Class Generation Functions generateClasses logic (all students) validates hasSchedules check" time="0.001">
+    </testcase>
+    <testcase classname="Class Generation Functions Month parsing correctly calculates days in month for various months" name="Class Generation Functions Month parsing correctly calculates days in month for various months" time="0.001">
+    </testcase>
+    <testcase classname="Class Generation Functions Month parsing parses month string correctly" name="Class Generation Functions Month parsing parses month string correctly" time="0.001">
+    </testcase>
+    <testcase classname="Class Generation Functions Day of week matching correctly identifies day of week" name="Class Generation Functions Day of week matching correctly identifies day of week" time="0.003">
+    </testcase>
+    <testcase classname="Class Generation Functions Day of week matching all days of week can be matched" name="Class Generation Functions Day of week matching all days of week can be matched" time="0.003">
+    </testcase>
+    <testcase classname="Class Generation Functions Class ID generation generates unique IDs" name="Class Generation Functions Class ID generation generates unique IDs" time="0.001">
+    </testcase>
+    <testcase classname="Class Generation Functions Class ID generation includes relevant information in ID" name="Class Generation Functions Class ID generation includes relevant information in ID" time="0.001">
+    </testcase>
+    <testcase classname="Class Generation Functions Edge cases handles year boundary in class generation" name="Class Generation Functions Edge cases handles year boundary in class generation" time="0.001">
+    </testcase>
+    <testcase classname="Class Generation Functions Edge cases handles multiple schedules for same day different times" name="Class Generation Functions Edge cases handles multiple schedules for same day different times" time="0.009">
+    </testcase>
+  </testsuite>
+  <testsuite name="App Component" errors="0" failures="0" skipped="0" timestamp="2026-01-27T03:44:02" time="1.806" tests="16">
+    <testcase classname="App Component App module exports a component" name="App Component App module exports a component" time="0.009">
+    </testcase>
+    <testcase classname="App Component App is a valid React function component" name="App Component App is a valid React function component" time="0.003">
+    </testcase>
+    <testcase classname="App Logic Functions - Direct Import Coverage formatDate function pattern formats various dates" name="App Logic Functions - Direct Import Coverage formatDate function pattern formats various dates" time="0.002">
+    </testcase>
+    <testcase classname="App Logic Functions - Direct Import Coverage getMonthName function pattern converts month strings" name="App Logic Functions - Direct Import Coverage getMonthName function pattern converts month strings" time="0.033">
+    </testcase>
+    <testcase classname="App Logic Functions - Direct Import Coverage navigateMonth function pattern navigates months forward and backward" name="App Logic Functions - Direct Import Coverage navigateMonth function pattern navigates months forward and backward" time="0.002">
+    </testcase>
+    <testcase classname="App Logic Functions - Direct Import Coverage incrementHour function pattern wraps hours correctly" name="App Logic Functions - Direct Import Coverage incrementHour function pattern wraps hours correctly" time="0.001">
+    </testcase>
+    <testcase classname="App Logic Functions - Direct Import Coverage incrementMinute function pattern wraps minutes correctly" name="App Logic Functions - Direct Import Coverage incrementMinute function pattern wraps minutes correctly" time="0.002">
+    </testcase>
+    <testcase classname="App Logic Functions - Direct Import Coverage getCalendarDays function pattern generates correct calendar grids" name="App Logic Functions - Direct Import Coverage getCalendarDays function pattern generates correct calendar grids" time="0.001">
+    </testcase>
+    <testcase classname="App Logic Functions - Direct Import Coverage getMonthlyClasses function pattern filters and sorts classes" name="App Logic Functions - Direct Import Coverage getMonthlyClasses function pattern filters and sorts classes" time="0.001">
+    </testcase>
+    <testcase classname="App Logic Functions - Direct Import Coverage getStudentStats function pattern calculates correct stats" name="App Logic Functions - Direct Import Coverage getStudentStats function pattern calculates correct stats" time="0">
+    </testcase>
+    <testcase classname="App Logic Functions - Direct Import Coverage getStudentStats function pattern handles missing data" name="App Logic Functions - Direct Import Coverage getStudentStats function pattern handles missing data" time="0.001">
+    </testcase>
+    <testcase classname="App Logic Functions - Direct Import Coverage getAvailableMonths function pattern generates available months" name="App Logic Functions - Direct Import Coverage getAvailableMonths function pattern generates available months" time="0.002">
+    </testcase>
+    <testcase classname="App Logic Functions - Direct Import Coverage toggleClassDetails function pattern toggles expanded state" name="App Logic Functions - Direct Import Coverage toggleClassDetails function pattern toggles expanded state" time="0.002">
+    </testcase>
+    <testcase classname="App Logic Functions - Direct Import Coverage Class generation logic generates classes from schedules" name="App Logic Functions - Direct Import Coverage Class generation logic generates classes from schedules" time="0.003">
+    </testcase>
+    <testcase classname="App Logic Functions - Direct Import Coverage Class generation logic detects duplicate classes" name="App Logic Functions - Direct Import Coverage Class generation logic detects duplicate classes" time="0">
+    </testcase>
+    <testcase classname="App Logic Functions - Direct Import Coverage Report generation logic generates combined report text" name="App Logic Functions - Direct Import Coverage Report generation logic generates combined report text" time="0.001">
+    </testcase>
+  </testsuite>
+  <testsuite name="Price Calculation Functions" errors="0" failures="0" skipped="0" timestamp="2026-01-27T03:44:04" time="0.154" tests="22">
+    <testcase classname="Price Calculation Functions getStudentStats logic calculates correct stats for Kareem in January" name="Price Calculation Functions getStudentStats logic calculates correct stats for Kareem in January" time="0.002">
+    </testcase>
+    <testcase classname="Price Calculation Functions getStudentStats logic calculates correct stats for Sara_Hana in January" name="Price Calculation Functions getStudentStats logic calculates correct stats for Sara_Hana in January" time="0.001">
+    </testcase>
+    <testcase classname="Price Calculation Functions getStudentStats logic returns zero for month with no classes" name="Price Calculation Functions getStudentStats logic returns zero for month with no classes" time="0.001">
+    </testcase>
+    <testcase classname="Price Calculation Functions getStudentStats logic returns zero for non-existent student" name="Price Calculation Functions getStudentStats logic returns zero for non-existent student" time="0.001">
+    </testcase>
+    <testcase classname="Price Calculation Functions getStudentStats logic handles missing price (defaults to 0)" name="Price Calculation Functions getStudentStats logic handles missing price (defaults to 0)" time="0.001">
+    </testcase>
+    <testcase classname="Price Calculation Functions getStudentStats logic handles invalid price string (defaults to 0)" name="Price Calculation Functions getStudentStats logic handles invalid price string (defaults to 0)" time="0.001">
+    </testcase>
+    <testcase classname="Price Calculation Functions getStudentStats logic calculates combined total correctly" name="Price Calculation Functions getStudentStats logic calculates combined total correctly" time="0.001">
+    </testcase>
+    <testcase classname="Price Calculation Functions getMonthlyClasses logic filters classes by month correctly" name="Price Calculation Functions getMonthlyClasses logic filters classes by month correctly" time="0">
+    </testcase>
+    <testcase classname="Price Calculation Functions getMonthlyClasses logic returns empty array for month with no classes" name="Price Calculation Functions getMonthlyClasses logic returns empty array for month with no classes" time="0.001">
+    </testcase>
+    <testcase classname="Price Calculation Functions getMonthlyClasses logic returns empty array for non-existent student" name="Price Calculation Functions getMonthlyClasses logic returns empty array for non-existent student" time="0">
+    </testcase>
+    <testcase classname="Price Calculation Functions getMonthlyClasses logic sorts classes in descending order (newest first)" name="Price Calculation Functions getMonthlyClasses logic sorts classes in descending order (newest first)" time="0.001">
+    </testcase>
+    <testcase classname="Price Calculation Functions getMonthlyClasses logic handles same day with different times correctly" name="Price Calculation Functions getMonthlyClasses logic handles same day with different times correctly" time="0.001">
+    </testcase>
+    <testcase classname="Price Calculation Functions updatePrice logic updates price correctly" name="Price Calculation Functions updatePrice logic updates price correctly" time="0">
+    </testcase>
+    <testcase classname="Price Calculation Functions updatePrice logic preserves other prices when updating one" name="Price Calculation Functions updatePrice logic preserves other prices when updating one" time="0.001">
+    </testcase>
+    <testcase classname="Price Calculation Functions updatePrice logic handles decimal prices" name="Price Calculation Functions updatePrice logic handles decimal prices" time="0.001">
+    </testcase>
+    <testcase classname="Price Calculation Functions updatePrice logic handles zero price" name="Price Calculation Functions updatePrice logic handles zero price" time="0">
+    </testcase>
+    <testcase classname="Price Calculation Functions Revenue calculations calculates revenue with decimal prices correctly" name="Price Calculation Functions Revenue calculations calculates revenue with decimal prices correctly" time="0.001">
+    </testcase>
+    <testcase classname="Price Calculation Functions Revenue calculations calculates grand total from multiple students" name="Price Calculation Functions Revenue calculations calculates grand total from multiple students" time="0">
+    </testcase>
+    <testcase classname="Price Calculation Functions Revenue calculations handles large number of classes" name="Price Calculation Functions Revenue calculations handles large number of classes" time="0">
+    </testcase>
+    <testcase classname="getAvailableMonths logic generates 12 months from current date" name="getAvailableMonths logic generates 12 months from current date" time="0.001">
+    </testcase>
+    <testcase classname="getAvailableMonths logic includes months from existing classes" name="getAvailableMonths logic includes months from existing classes" time="0">
+    </testcase>
+    <testcase classname="getAvailableMonths logic sorts months chronologically" name="getAvailableMonths logic sorts months chronologically" time="0.014">
+    </testcase>
+  </testsuite>
+  <testsuite name="App Integration Tests" errors="0" failures="0" skipped="0" timestamp="2026-01-27T03:44:02" time="1.981" tests="20">
+    <testcase classname="App Integration Tests Initialization initializeApp loads data and sets current month" name="App Integration Tests Initialization initializeApp loads data and sets current month" time="0.012">
+    </testcase>
+    <testcase classname="App Integration Tests Initialization loads existing data from storage" name="App Integration Tests Initialization loads existing data from storage" time="0.001">
+    </testcase>
+    <testcase classname="App Integration Tests Student configuration students array is correctly configured" name="App Integration Tests Student configuration students array is correctly configured" time="0.001">
+    </testcase>
+    <testcase classname="App Integration Tests Student configuration days of week array is correctly configured" name="App Integration Tests Student configuration days of week array is correctly configured" time="0.001">
+    </testcase>
+    <testcase classname="App Integration Tests State management default prices are set correctly" name="App Integration Tests State management default prices are set correctly" time="0">
+    </testcase>
+    <testcase classname="App Integration Tests State management default classes are empty arrays" name="App Integration Tests State management default classes are empty arrays" time="0">
+    </testcase>
+    <testcase classname="App Integration Tests State management default schedules are empty arrays" name="App Integration Tests State management default schedules are empty arrays" time="0">
+    </testcase>
+    <testcase classname="App Integration Tests Theme configuration theme colors are defined" name="App Integration Tests Theme configuration theme colors are defined" time="0">
+    </testcase>
+    <testcase classname="App Integration Tests Save status management save status transitions" name="App Integration Tests Save status management save status transitions" time="0.001">
+    </testcase>
+    <testcase classname="Modal functionality price modal visibility toggle logic" name="Modal functionality price modal visibility toggle logic" time="0">
+    </testcase>
+    <testcase classname="Modal functionality class modal visibility toggle logic" name="Modal functionality class modal visibility toggle logic" time="0.001">
+    </testcase>
+    <testcase classname="Modal functionality schedule modal visibility toggle logic" name="Modal functionality schedule modal visibility toggle logic" time="0">
+    </testcase>
+    <testcase classname="Modal functionality report modal visibility toggle logic" name="Modal functionality report modal visibility toggle logic" time="0">
+    </testcase>
+    <testcase classname="Expandable sections toggleClassDetails toggles expanded state" name="Expandable sections toggleClassDetails toggles expanded state" time="0.001">
+    </testcase>
+    <testcase classname="Expandable sections showSchedules toggle logic" name="Expandable sections showSchedules toggle logic" time="0">
+    </testcase>
+    <testcase classname="Form state management selectedStudent default and update" name="Form state management selectedStudent default and update" time="0.001">
+    </testcase>
+    <testcase classname="Form state management selectedDay default and update" name="Form state management selectedDay default and update" time="0">
+    </testcase>
+    <testcase classname="Form state management hour and minute defaults" name="Form state management hour and minute defaults" time="0">
+    </testcase>
+    <testcase classname="Form state management date state management" name="Form state management date state management" time="0.001">
+    </testcase>
+    <testcase classname="Statistics calculation calculates total classes correctly" name="Statistics calculation calculates total classes correctly" time="0">
+    </testcase>
+  </testsuite>
+  <testsuite name="Date Helper Functions" errors="0" failures="0" skipped="0" timestamp="2026-01-27T03:44:02" time="1.944" tests="21">
+    <testcase classname="Date Helper Functions formatDate logic formats single digit month with leading zero" name="Date Helper Functions formatDate logic formats single digit month with leading zero" time="0.015">
+    </testcase>
+    <testcase classname="Date Helper Functions formatDate logic formats single digit day with leading zero" name="Date Helper Functions formatDate logic formats single digit day with leading zero" time="0.001">
+    </testcase>
+    <testcase classname="Date Helper Functions formatDate logic formats double digit month and day correctly" name="Date Helper Functions formatDate logic formats double digit month and day correctly" time="0.001">
+    </testcase>
+    <testcase classname="Date Helper Functions formatDate logic handles leap year February 29" name="Date Helper Functions formatDate logic handles leap year February 29" time="0.001">
+    </testcase>
+    <testcase classname="Date Helper Functions formatDate logic handles year boundary - December 31" name="Date Helper Functions formatDate logic handles year boundary - December 31" time="0.001">
+    </testcase>
+    <testcase classname="Date Helper Functions formatDate logic handles year boundary - January 1" name="Date Helper Functions formatDate logic handles year boundary - January 1" time="0">
+    </testcase>
+    <testcase classname="Date Helper Functions getMonthName logic converts 2025-01 to January 2025" name="Date Helper Functions getMonthName logic converts 2025-01 to January 2025" time="0.022">
+    </testcase>
+    <testcase classname="Date Helper Functions getMonthName logic converts 2025-12 to December 2025" name="Date Helper Functions getMonthName logic converts 2025-12 to December 2025" time="0.001">
+    </testcase>
+    <testcase classname="Date Helper Functions getMonthName logic converts 2024-06 to June 2024" name="Date Helper Functions getMonthName logic converts 2024-06 to June 2024" time="0.001">
+    </testcase>
+    <testcase classname="Date Helper Functions getCalendarDays logic generates correct days for January 2025 (starts on Wednesday)" name="Date Helper Functions getCalendarDays logic generates correct days for January 2025 (starts on Wednesday)" time="0.002">
+    </testcase>
+    <testcase classname="Date Helper Functions getCalendarDays logic generates correct days for February 2024 (leap year)" name="Date Helper Functions getCalendarDays logic generates correct days for February 2024 (leap year)" time="0">
+    </testcase>
+    <testcase classname="Date Helper Functions getCalendarDays logic generates correct days for February 2025 (non-leap year)" name="Date Helper Functions getCalendarDays logic generates correct days for February 2025 (non-leap year)" time="0">
+    </testcase>
+    <testcase classname="Date Helper Functions getCalendarDays logic generates correct days for month starting on Sunday" name="Date Helper Functions getCalendarDays logic generates correct days for month starting on Sunday" time="0.001">
+    </testcase>
+    <testcase classname="Date Helper Functions getCalendarDays logic handles all month lengths (28, 29, 30, 31)" name="Date Helper Functions getCalendarDays logic handles all month lengths (28, 29, 30, 31)" time="0.001">
+    </testcase>
+    <testcase classname="Date Helper Functions navigateMonth logic navigates forward from January to February" name="Date Helper Functions navigateMonth logic navigates forward from January to February" time="0">
+    </testcase>
+    <testcase classname="Date Helper Functions navigateMonth logic navigates backward from February to January" name="Date Helper Functions navigateMonth logic navigates backward from February to January" time="0.001">
+    </testcase>
+    <testcase classname="Date Helper Functions navigateMonth logic navigates forward across year boundary (December to January)" name="Date Helper Functions navigateMonth logic navigates forward across year boundary (December to January)" time="0">
+    </testcase>
+    <testcase classname="Date Helper Functions navigateMonth logic navigates backward across year boundary (January to December)" name="Date Helper Functions navigateMonth logic navigates backward across year boundary (January to December)" time="0.001">
+    </testcase>
+    <testcase classname="Date Helper Functions setCurrentMonthToNow logic generates current month string correctly" name="Date Helper Functions setCurrentMonthToNow logic generates current month string correctly" time="0.001">
+    </testcase>
+    <testcase classname="Calendar Day Selection selectCalendarDay creates correct date object" name="Calendar Day Selection selectCalendarDay creates correct date object" time="0.001">
+    </testcase>
+    <testcase classname="Calendar Day Selection selectCalendarDay handles last day of month" name="Calendar Day Selection selectCalendarDay handles last day of month" time="0">
+    </testcase>
+  </testsuite>
+</testsuites>
