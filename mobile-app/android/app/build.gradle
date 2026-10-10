@@ -82,8 +82,8 @@ android {
         applicationId "com.studentapp"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 2
-        versionName "2.0.1"
+        versionCode 3
+        versionName "2.0.2"
     }
     signingConfigs {
         debug {
@@ -117,3 +117,5 @@ dependencies {
         implementation jscFlavor
     }
 }
+
+apply from: "../../node_modules/react-native-vector-icons/fonts.gradle"
